@@ -274,6 +274,7 @@ class FacebookSDKService {
             const period = metric.period as keyof MetricValues;
 
             const values = metric.values.map((v: any) => Number(v.value));
+            
             if (!insights[name][period]) {
               insights[name][period] = values;
             }
