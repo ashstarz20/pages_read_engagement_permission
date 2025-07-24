@@ -250,7 +250,7 @@ class FacebookSDKService {
       ];
 
       window.FB.api(
-        `/${pageId}/insights`,
+        `/${pageId}/insights/page_impressions_unique`,
         "GET",
         {
           access_token: accessToken,
