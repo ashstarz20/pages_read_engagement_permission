@@ -262,6 +262,9 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
                 <p className="text-2xl font-bold text-gray-900">
                   {insights?.page_engaged_users.toLocaleString() || "0"}
                 </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  (Positive Feedback)
+                </p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <Heart className="w-6 h-6 text-purple-600" />
