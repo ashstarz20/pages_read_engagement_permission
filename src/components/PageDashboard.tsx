@@ -224,7 +224,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
               <div>
                 <p className="text-sm text-gray-600 mb-1">Page Impressions</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_impressions_unique.toLocaleString() || "0"}
+                  {(insights?.page_impressions_unique ?? 0).toLocaleString()}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -242,7 +242,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
               <div>
                 <p className="text-sm text-gray-600 mb-1">Page Reach</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_reach.toLocaleString() || "0"}
+                  {(insights?.page_reach ?? 0).toLocaleString()}
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -260,7 +260,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
               <div>
                 <p className="text-sm text-gray-600 mb-1">Engaged Users</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_engaged_users.toLocaleString() || "0"}
+                  {(insights?.page_engaged_users ?? 0).toLocaleString()}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   (Positive Feedback)
@@ -281,7 +281,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
               <div>
                 <p className="text-sm text-gray-600 mb-1">Post Engagements</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_impressions_paid.toLocaleString() || "0"}
+                  {(insights?.page_impressions_paid ?? 0).toLocaleString()}
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
