@@ -224,7 +224,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
               <div>
                 <p className="text-sm text-gray-600 mb-1">Page Impressions</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_impressions.toLocaleString() || "0"}
+                  {insights?.page_impressions_unique.toLocaleString() || "0"}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">

@@ -243,10 +243,10 @@ class FacebookSDKService {
 
     return new Promise((resolve, reject) => {
       const metrics = [
-        "page_impressions",
+        "page_impressions_unique",
+        "page_impressions_paid",
         "page_reach",
-        "page_positive_feedback",
-        "page_post_engagements",
+        "page_engaged_users",
       ];
 
       window.FB.api(
@@ -255,41 +255,32 @@ class FacebookSDKService {
         {
           access_token: accessToken,
           metric: metrics.join(","),
-          period: "day",
-          since: Math.floor((Date.now() - 7 * 86400000) / 1000), // Unix timestamp
-          until: Math.floor(Date.now() / 1000),
+          period: "day", // choose your granularity
+          since: new Date(Date.now() - 7 * 86400000)
+            .toISOString()
+            .split("T")[0],
+          until: new Date().toISOString().split("T")[0],
         },
         (response: any) => {
           console.log("Insights response:", response);
 
           if (response.error) {
             reject(
-              new Error(`
-            Facebook Insights Error: ${response.error.message}
-            Required Permissions: read_insights
-            Trace ID: ${response.error.fbtrace_id}
-          `)
+              new Error(`Failed to get insights: ${response.error.message}`)
             );
             return;
           }
 
-          // Process insights data
           const insights: PageInsights = {
-            page_impressions: 0,
+            page_impressions_unique: 0,
+            page_impressions_paid: 0,
             page_reach: 0,
             page_engaged_users: 0,
-            page_post_engagements: 0,
           };
 
           response.data.forEach((metric: any) => {
-            const latest = metric.values?.slice(-1)[0]?.value || 0;
-
-            // Map new metric to legacy property
-            if (metric.name === "page_positive_feedback") {
-              insights.page_engaged_users = latest;
-            } else {
-              insights[metric.name as keyof PageInsights] = latest;
-            }
+            const latest = metric.values?.pop()?.value || 0;
+            insights[metric.name as keyof PageInsights] = latest;
           });
 
           resolve(insights);

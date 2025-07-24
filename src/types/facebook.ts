@@ -23,10 +23,10 @@ export interface PagePost {
 }
 
 export interface PageInsights {
-  page_impressions: number;
+  page_impressions_unique: number;
+  page_impressions_paid: number;
   page_reach: number;
   page_engaged_users: number;
-  page_post_engagements: number;
 }
 
 export interface FacebookUser {
