@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { FacebookPage, PagePost, PageInsights } from '../types/facebook';
-import { facebookSDK } from '../services/facebookSDK';
-import { 
-  BarChart3, 
-  Users, 
-  Eye, 
-  Heart, 
-  MessageCircle, 
-  Share, 
+import React, { useState, useEffect } from "react";
+import { FacebookPage, PagePost, PageInsights } from "../types/facebook";
+import { facebookSDK } from "../services/facebookSDK";
+import {
+  BarChart3,
+  Users,
+  Eye,
+  Heart,
+  MessageCircle,
+  Share,
   Calendar,
   ArrowLeft,
   Shield,
@@ -18,15 +18,18 @@ import {
   FileText,
   RefreshCw,
   AlertTriangle,
-  CheckCircle2
-} from 'lucide-react';
+  CheckCircle2,
+} from "lucide-react";
 
 interface PageDashboardProps {
   page: FacebookPage;
   onBack: () => void;
 }
 
-export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) => {
+export const PageDashboard: React.FC<PageDashboardProps> = ({
+  page,
+  onBack,
+}) => {
   const [posts, setPosts] = useState<PagePost[]>([]);
   const [insights, setInsights] = useState<PageInsights | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,30 +45,37 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
     setError(null);
 
     try {
-      console.log('Loading data for page:', page.name, 'with token:', page.access_token);
-      
+      console.log(
+        "Loading data for page:",
+        page.name,
+        "with token:",
+        page.access_token
+      );
+
       // Load posts and insights in parallel
       const [postsData, insightsData] = await Promise.all([
-        facebookSDK.getPagePosts(page.id, page.access_token).catch(err => {
-          console.warn('Failed to load posts:', err);
+        facebookSDK.getPagePosts(page.id, page.access_token).catch((err) => {
+          console.warn("Failed to load posts:", err);
           return [];
         }),
-        facebookSDK.getPageInsights(page.id, page.access_token).catch(err => {
-          console.warn('Failed to load insights:', err);
+        facebookSDK.getPageInsights(page.id, page.access_token).catch((err) => {
+          console.warn("Failed to load insights:", err);
           return {
             page_impressions: 0,
             page_reach: 0,
             page_engaged_users: 0,
-            page_post_engagements: 0
+            page_post_engagements: 0,
           };
-        })
+        }),
       ]);
 
       setPosts(postsData);
       setInsights(insightsData);
     } catch (error) {
-      console.error('Error loading page data:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load page data');
+      console.error("Error loading page data:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to load page data"
+      );
     } finally {
       setLoading(false);
     }
@@ -79,18 +89,21 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
 
   const getPostIcon = (type: string) => {
     switch (type) {
-      case 'photo': return <Image className="w-4 h-4" />;
-      case 'video': return <Video className="w-4 h-4" />;
-      default: return <FileText className="w-4 h-4" />;
+      case "photo":
+        return <Image className="w-4 h-4" />;
+      case "video":
+        return <Video className="w-4 h-4" />;
+      default:
+        return <FileText className="w-4 h-4" />;
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -100,7 +113,9 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading {page.name} data...</p>
-          <p className="text-sm text-gray-500 mt-1">Fetching posts and insights with pages_read_engagement</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Fetching posts and insights with pages_read_engagement
+          </p>
         </div>
       </div>
     );
@@ -124,7 +139,9 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
                   <Globe className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-gray-900">{page.name}</h1>
+                  <h1 className="text-xl font-semibold text-gray-900">
+                    {page.name}
+                  </h1>
                   <p className="text-sm text-gray-600">{page.category}</p>
                 </div>
               </div>
@@ -138,7 +155,9 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
               disabled={refreshing}
               className="flex items-center space-x-2 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+              />
               <span>Refresh</span>
             </button>
           </div>
@@ -154,7 +173,8 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
                 <h3 className="font-semibold text-red-900 mb-1">API Error</h3>
                 <p className="text-sm text-red-800">{error}</p>
                 <p className="text-xs text-red-700 mt-2">
-                  This may be due to missing permissions, expired tokens, or API limitations.
+                  This may be due to missing permissions, expired tokens, or API
+                  limitations.
                 </p>
               </div>
             </div>
@@ -167,7 +187,9 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
         <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-blue-900 mb-1">Facebook API Integration Status</h3>
+              <h3 className="font-semibold text-blue-900 mb-1">
+                Facebook API Integration Status
+              </h3>
               <div className="text-sm text-blue-800 space-y-1">
                 <div className="flex items-center space-x-2">
                   <CheckCircle2 className="w-4 h-4 text-green-600" />
@@ -188,7 +210,8 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
                 <strong>Posts loaded:</strong> {posts.length}
               </div>
               <div className="text-sm text-blue-700">
-                <strong>Insights:</strong> {insights ? 'Available' : 'Loading...'}
+                <strong>Insights:</strong>{" "}
+                {insights ? "Available" : "Loading..."}
               </div>
             </div>
           </div>
@@ -201,7 +224,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Page Impressions</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_impressions.toLocaleString() || '0'}
+                  {insights?.page_impressions.toLocaleString() || "0"}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -219,7 +242,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Page Reach</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_reach.toLocaleString() || '0'}
+                  {insights?.page_reach.toLocaleString() || "0"}
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -237,7 +260,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Engaged Users</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_engaged_users.toLocaleString() || '0'}
+                  {insights?.page_engaged_users.toLocaleString() || "0"}
                 </p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -255,7 +278,7 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Post Engagements</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {insights?.page_post_engagements.toLocaleString() || '0'}
+                  {insights?.page_post_engagements.toLocaleString() || "0"}
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -274,11 +297,15 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Recent Posts</h2>
-                <p className="text-sm text-gray-600 mt-1">Latest content from your page via Facebook API</p>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Recent Posts
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Latest content from your page via Facebook API
+                </p>
               </div>
               <div className="text-sm text-gray-500">
-                {posts.length} post{posts.length !== 1 ? 's' : ''} loaded
+                {posts.length} post{posts.length !== 1 ? "s" : ""} loaded
               </div>
             </div>
           </div>
@@ -286,14 +313,26 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
           {posts.length > 0 ? (
             <div className="divide-y divide-gray-200">
               {posts.map((post) => (
-                <div key={post.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div
+                  key={post.id}
+                  className="p-6 hover:bg-gray-50 transition-colors"
+                >
+                  {post.imageUrl && (
+                    <img
+                      src={post.imageUrl}
+                      alt="Post media"
+                      className="w-full h-auto rounded-lg mb-4 object-cover"
+                    />
+                  )}
                   <div className="flex items-start space-x-4">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
                       {getPostIcon(post.type)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm font-medium text-gray-900 capitalize">{post.type} Post</span>
+                        <span className="text-sm font-medium text-gray-900 capitalize">
+                          {post.type} Post
+                        </span>
                         <span className="text-sm text-gray-500">•</span>
                         <div className="flex items-center text-sm text-gray-500">
                           <Calendar className="w-4 h-4 mr-1" />
@@ -303,19 +342,25 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
                           Live Data
                         </span>
                       </div>
-                      
+
                       <p className="text-gray-800 mb-4 leading-relaxed">
-                        {post.message || post.story || 'No text content available'}
+                        {post.message ||
+                          post.story ||
+                          "No text content available"}
                       </p>
-                      
+
                       <div className="flex items-center space-x-6">
                         <div className="flex items-center space-x-1 text-gray-600">
                           <Heart className="w-4 h-4" />
-                          <span className="text-sm">{post.reactions.summary.total_count}</span>
+                          <span className="text-sm">
+                            {post.reactions.summary.total_count}
+                          </span>
                         </div>
                         <div className="flex items-center space-x-1 text-gray-600">
                           <MessageCircle className="w-4 h-4" />
-                          <span className="text-sm">{post.comments.summary.total_count}</span>
+                          <span className="text-sm">
+                            {post.comments.summary.total_count}
+                          </span>
                         </div>
                         {post.shares && (
                           <div className="flex items-center space-x-1 text-gray-600">
@@ -324,7 +369,9 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
                           </div>
                         )}
                         <div className="flex items-center space-x-1 text-gray-600">
-                          <span className="text-xs text-gray-500">ID: {post.id}</span>
+                          <span className="text-xs text-gray-500">
+                            ID: {post.id}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -335,9 +382,12 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
           ) : (
             <div className="p-12 text-center">
               <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Posts Found</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No Posts Found
+              </h3>
               <p className="text-gray-600 mb-4">
-                This page doesn't have any recent posts, or they're not accessible with current permissions.
+                This page doesn't have any recent posts, or they're not
+                accessible with current permissions.
               </p>
               <button
                 onClick={handleRefresh}
@@ -354,11 +404,22 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({ page, onBack }) =>
           <div className="flex items-start space-x-3">
             <Shield className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Privacy & Data Security</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Privacy & Data Security
+              </h3>
               <div className="text-sm text-gray-700 space-y-1">
-                <p>✓ Only aggregated, anonymized metrics are processed and displayed</p>
-                <p>✓ No personal user information from comments or reactions is stored</p>
-                <p>✓ Data is encrypted and handled in compliance with GDPR requirements</p>
+                <p>
+                  ✓ Only aggregated, anonymized metrics are processed and
+                  displayed
+                </p>
+                <p>
+                  ✓ No personal user information from comments or reactions is
+                  stored
+                </p>
+                <p>
+                  ✓ Data is encrypted and handled in compliance with GDPR
+                  requirements
+                </p>
                 <p>✓ Full data deletion available upon request</p>
               </div>
             </div>

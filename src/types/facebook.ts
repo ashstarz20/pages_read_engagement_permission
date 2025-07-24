@@ -8,25 +8,18 @@ export interface FacebookPage {
   access_token: string;
 }
 
+// src/types/facebook.ts
 export interface PagePost {
   id: string;
   message?: string;
   story?: string;
   created_time: string;
   type: "photo" | "video" | "status" | "link";
-  reactions: {
-    summary: {
-      total_count: number;
-    };
-  };
-  comments: {
-    summary: {
-      total_count: number;
-    };
-  };
-  shares?: {
-    count: number;
-  };
+  reactions: { summary: { total_count: number } };
+  comments: { summary: { total_count: number } };
+  shares?: { count: number };
+  imageUrl?: string; // <-- New property for media
+  permalink_url: string;
 }
 
 export interface PageInsights {

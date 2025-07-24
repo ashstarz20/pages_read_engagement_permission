@@ -226,6 +226,7 @@ class FacebookSDKService {
               },
             },
             shares: post.shares ? { count: post.shares.count } : undefined,
+            imageUrl: post.attachments?.data?.[0]?.media?.image?.src, // grabs the image URL from first attachment
           }));
 
           resolve(posts);
