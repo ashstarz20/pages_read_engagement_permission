@@ -242,24 +242,23 @@ class FacebookSDKService {
     await this.initialize();
 
     return new Promise((resolve, reject) => {
-      const metrics = [
-        "page_impressions_unique",
-        "page_impressions_paid",
-        "page_reach",
-        "page_engaged_users",
-      ];
+      // const metrics = [
+      //   "page_impressions_paid",
+      //   "page_reach",
+      //   "page_engaged_users",
+      // ];
 
       window.FB.api(
-        `/${pageId}/insights/page_impressions_unique`,
+        `/${pageId}/insights?metric=page_impressions_unique,page_impressions_paid`,
         "GET",
         {
           access_token: accessToken,
-          metric: metrics.join(","),
-          period: "day", // choose your granularity
-          since: new Date(Date.now() - 7 * 86400000)
-            .toISOString()
-            .split("T")[0],
-          until: new Date().toISOString().split("T")[0],
+          // metric: metrics.join(","),
+          // period: "day", // choose your granularity
+          // since: new Date(Date.now() - 7 * 86400000)
+          //   .toISOString()
+          //   .split("T")[0],
+          // until: new Date().toISOString().split("T")[0],
         },
         (response: any) => {
           console.log("Insights response:", response);
