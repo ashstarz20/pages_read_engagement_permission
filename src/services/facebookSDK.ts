@@ -243,17 +243,12 @@ class FacebookSDKService {
     await this.initialize();
 
     return new Promise((resolve, reject) => {
-      const metrics = [
-        "page_impressions_unique",
-        "page_impressions_paid",
-        "page_reach",
-        "page_engaged_users",
-      ];
-
       window.FB.api(
-        `/${pageId}/insights?metric=${metrics.join(",")}`,
+        `/${pageId}/insights?metric=page_impressions_unique,page_impressions_paid`,
         "GET",
-        { access_token: accessToken },
+        {
+          access_token: accessToken,
+        },
         (response: any) => {
           console.log("Insights response:", response);
 
@@ -264,22 +259,23 @@ class FacebookSDKService {
             return;
           }
 
+          // Initialize every metric with empty arrays for each period
           const insights: PageInsights = {
-            page_impressions_unique: {},
-            page_impressions_paid: {},
-            page_reach: {},
-            page_engaged_users: {},
+            page_impressions_unique: { day: [], week: [], days_28: [] },
+            page_impressions_paid: { day: [], week: [], days_28: [] },
+            page_reach: { day: [], week: [], days_28: [] },
+            page_engaged_users: { day: [], week: [], days_28: [] },
           };
 
           response.data.forEach((metric: any) => {
             const name = metric.name as keyof PageInsights;
             const period = metric.period as keyof MetricValues;
-
-            const values = metric.values.map((v: any) => Number(v.value));
-
-            if (!insights[name][period]) {
-              insights[name][period] = values;
-            }
+            // extract all numeric values for that period
+            const values: number[] = metric.values.map((v: any) =>
+              Number(v.value)
+            );
+            // assign into the matching array
+            insights[name][period] = values;
           });
 
           resolve(insights);

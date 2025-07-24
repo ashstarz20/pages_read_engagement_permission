@@ -13,8 +13,8 @@ import {
   Shield,
   TrendingUp,
   Globe,
-  Image,
-  Video,
+  // Image,
+  // Video,
   FileText,
   RefreshCw,
   AlertTriangle,
@@ -79,16 +79,16 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
     setRefreshing(false);
   };
 
-  const getPostIcon = (type: string) => {
-    switch (type) {
-      case "photo":
-        return <Image className="w-4 h-4" />;
-      case "video":
-        return <Video className="w-4 h-4" />;
-      default:
-        return <FileText className="w-4 h-4" />;
-    }
-  };
+  // const getPostIcon = (type: string) => {
+  //   switch (type) {
+  //     case "photo":
+  //       return <Image className="w-4 h-4" />;
+  //     case "video":
+  //       return <Video className="w-4 h-4" />;
+  //     default:
+  //       return <FileText className="w-4 h-4" />;
+  //   }
+  // };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
