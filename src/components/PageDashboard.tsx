@@ -311,70 +311,80 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
           </div>
 
           {posts.length > 0 ? (
-            <div className="divide-y divide-gray-200">
+            <div className="space-y-6">
               {posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="p-6 hover:bg-gray-50 transition-colors"
-                >
-                  {post.imageUrl && (
+                <div key={post.id} className="bg-white rounded-lg shadow">
+                  {/* Header */}
+                  <div className="flex items-center px-4 py-3">
                     <img
-                      src={post.imageUrl}
-                      alt="Post media"
-                      className="w-full h-auto rounded-lg mb-4 object-cover"
+                      src={page.picture}
+                      alt={page.name}
+                      className="w-10 h-10 rounded-full mr-3"
                     />
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900">
+                        {page.name}
+                      </h3>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <Calendar className="w-3.5 h-3.5 mr-1" />
+                        {formatDate(post.created_time)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Message */}
+                  <div className="px-4">
+                    <p className="text-sm text-gray-800 mb-3 whitespace-pre-wrap">
+                      {post.message || post.story}
+                    </p>
+                  </div>
+
+                  {/* Media */}
+                  {post.imageUrl && (
+                    <div>
+                      <img
+                        src={post.imageUrl}
+                        alt="Post media"
+                        className="w-full max-h-[500px] object-cover"
+                      />
+                    </div>
                   )}
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
-                      {getPostIcon(post.type)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm font-medium text-gray-900 capitalize">
-                          {post.type} Post
-                        </span>
-                        <span className="text-sm text-gray-500">•</span>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          {formatDate(post.created_time)}
-                        </div>
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                          Live Data
-                        </span>
-                      </div>
 
-                      <p className="text-gray-800 mb-4 leading-relaxed">
-                        {post.message ||
-                          post.story ||
-                          "No text content available"}
-                      </p>
-
-                      <div className="flex items-center space-x-6">
-                        <div className="flex items-center space-x-1 text-gray-600">
-                          <Heart className="w-4 h-4" />
-                          <span className="text-sm">
-                            {post.reactions.summary.total_count}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1 text-gray-600">
-                          <MessageCircle className="w-4 h-4" />
-                          <span className="text-sm">
-                            {post.comments.summary.total_count}
-                          </span>
-                        </div>
-                        {post.shares && (
-                          <div className="flex items-center space-x-1 text-gray-600">
-                            <Share className="w-4 h-4" />
-                            <span className="text-sm">{post.shares.count}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center space-x-1 text-gray-600">
-                          <span className="text-xs text-gray-500">
-                            ID: {post.id}
-                          </span>
-                        </div>
+                  {/* Stats */}
+                  <div className="px-4 py-2 border-t border-gray-200 flex items-center justify-between">
+                    <div className="flex items-center space-x-4 text-gray-600 text-sm">
+                      <div className="flex items-center space-x-1">
+                        <Heart className="w-4 h-4" />
+                        <span>{post.reactions.summary.total_count}</span>
                       </div>
+                      <div className="flex items-center space-x-1">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>{post.comments.summary.total_count}</span>
+                      </div>
+                      {post.shares && (
+                        <div className="flex items-center space-x-1">
+                          <Share className="w-4 h-4" />
+                          <span>{post.shares.count}</span>
+                        </div>
+                      )}
                     </div>
+                    <span className="text-xs text-gray-400">ID: {post.id}</span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="px-4 py-2 flex justify-around">
+                    <button className="flex items-center space-x-1 text-gray-600 hover:bg-gray-100 rounded px-2 py-1">
+                      <Heart className="w-5 h-5" />
+                      <span>Like</span>
+                    </button>
+                    <button className="flex items-center space-x-1 text-gray-600 hover:bg-gray-100 rounded px-2 py-1">
+                      <MessageCircle className="w-5 h-5" />
+                      <span>Comment</span>
+                    </button>
+                    <button className="flex items-center space-x-1 text-gray-600 hover:bg-gray-100 rounded px-2 py-1">
+                      <Share className="w-5 h-5" />
+                      <span>Share</span>
+                    </button>
                   </div>
                 </div>
               ))}
