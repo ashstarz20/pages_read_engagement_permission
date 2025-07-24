@@ -22,11 +22,17 @@ export interface PagePost {
   permalink_url: string;
 }
 
+export interface MetricValues {
+  day?: number[];
+  week?: number[];
+  days_28?: number[];
+}
+
 export interface PageInsights {
-  page_impressions_unique: number;
-  page_impressions_paid: number;
-  page_reach: number;
-  page_engaged_users: number;
+  page_impressions_unique: MetricValues;
+  page_impressions_paid: MetricValues;
+  page_reach: MetricValues;
+  page_engaged_users: MetricValues;
 }
 
 export interface FacebookUser {

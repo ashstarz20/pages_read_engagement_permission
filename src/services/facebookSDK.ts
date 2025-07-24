@@ -3,6 +3,7 @@ import {
   FacebookPage,
   PagePost,
   PageInsights,
+  MetricValues,
   FacebookUser,
 } from "../types/facebook";
 
@@ -242,27 +243,18 @@ class FacebookSDKService {
     await this.initialize();
 
     return new Promise((resolve, reject) => {
-      // const metrics = [
-      //   "page_impressions_paid",
-      //   "page_reach",
-      //   "page_engaged_users",
-      // ];
+      const metrics = [
+        "page_impressions_unique",
+        "page_impressions_paid",
+        "page_reach",
+        "page_engaged_users",
+      ];
 
       window.FB.api(
-        `/${pageId}/insights?metric=page_impressions_unique,page_impressions_paid`,
+        `/${pageId}/insights?metric=${metrics.join(",")}`,
         "GET",
-        {
-          access_token: accessToken,
-          // metric: metrics.join(","),
-          // period: "day", // choose your granularity
-          // since: new Date(Date.now() - 7 * 86400000)
-          //   .toISOString()
-          //   .split("T")[0],
-          // until: new Date().toISOString().split("T")[0],
-        },
+        { access_token: accessToken },
         (response: any) => {
-          console.log("Insights response:", response);
-
           if (response.error) {
             reject(
               new Error(`Failed to get insights: ${response.error.message}`)
@@ -271,15 +263,20 @@ class FacebookSDKService {
           }
 
           const insights: PageInsights = {
-            page_impressions_unique: 0,
-            page_impressions_paid: 0,
-            page_reach: 0,
-            page_engaged_users: 0,
+            page_impressions_unique: {},
+            page_impressions_paid: {},
+            page_reach: {},
+            page_engaged_users: {},
           };
 
           response.data.forEach((metric: any) => {
-            const latest = metric.values?.pop()?.value || 0;
-            insights[metric.name as keyof PageInsights] = latest;
+            const name = metric.name as keyof PageInsights;
+            const period = metric.period as keyof MetricValues;
+
+            const values = metric.values.map((v: any) => Number(v.value));
+            if (!insights[name][period]) {
+              insights[name][period] = values;
+            }
           });
 
           resolve(insights);
