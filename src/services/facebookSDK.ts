@@ -194,11 +194,10 @@ class FacebookSDKService {
       message,
       story,
       created_time,
+      full_picture, 
       reactions.summary(total_count),
       comments.summary(total_count),
-      attachments{
-        media, media_type, url, type, title, target
-      },
+      attachments{media,media_type},
       permalink_url`,
           limit: 10,
         },
@@ -227,7 +226,7 @@ class FacebookSDKService {
               },
             },
             shares: post.shares ? { count: post.shares.count } : undefined,
-            imageUrl: post.attachments?.data?.[0]?.media?.image?.src, // grabs the image URL from first attachment
+            imageUrl: post.full_picture, // grabs the image URL from first attachment
           }));
 
           resolve(posts);
