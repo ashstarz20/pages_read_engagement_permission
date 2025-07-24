@@ -1,6 +1,7 @@
 export interface FacebookPage {
   id: string;
   name: string;
+  picture: string; // URL to the page's profile picture
   category: string;
   followers_count: number;
   fan_count: number;
