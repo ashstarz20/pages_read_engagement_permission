@@ -24,6 +24,7 @@ import {
   calculateChange,
   getComparisonValues,
   getComparisonText,
+  InsightPeriod,
 } from "../utils/insights";
 
 interface PageDashboardProps {
@@ -116,11 +117,11 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
   // Calculate insights data with comparisons
   const getInsightData = (
     metric: keyof PageInsights,
-    period: "day" | "week"
+    period: InsightPeriod
   ) => {
     if (!insights) return { current: 0, change: "0%" };
 
-    const values = insights[metric][period];
+    const values = insights[metric][period] ?? [];
     const [current, previous] = getComparisonValues(values, period);
     const change = calculateChange(current, previous);
 
@@ -135,6 +136,11 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
   const engagedUsersData = getInsightData("page_engaged_users", "day");
   // Paid impressions
   const paidImpressionsData = getInsightData("page_impressions_paid", "day");
+  // Monthly impressions (28 days)
+  const monthlyImpressionsData = getInsightData(
+    "page_impressions_unique",
+    "days_28"
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -352,6 +358,36 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
                 <TrendingUp className="w-4 h-4 mr-1" />
                 <span>
                   {paidImpressionsData.change} {getComparisonText("day")}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">28‑Day Impressions</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {monthlyImpressionsData.current.toLocaleString()}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
+            {monthlyImpressionsData.change !== "N/A" && (
+              <div
+                className={`flex items-center mt-2 text-sm ${
+                  monthlyImpressionsData.change.startsWith("+")
+                    ? "text-green-600"
+                    : monthlyImpressionsData.change.startsWith("-")
+                    ? "text-red-600"
+                    : "text-gray-600"
+                }`}
+              >
+                <TrendingUp className="w-4 h-4 mr-1" />
+                <span>
+                  {monthlyImpressionsData.change} {getComparisonText("days_28")}
                 </span>
               </div>
             )}
