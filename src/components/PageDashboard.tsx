@@ -433,14 +433,22 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
                       </div>
                     </div>
                   </div>
-
                   {/* Message */}
                   <div className="px-4">
                     <p className="text-sm text-gray-800 mb-3 whitespace-pre-wrap">
                       {post.message || post.story}
                     </p>
                   </div>
-
+                  + {/* Media */}
+                  {post.imageUrl && (
+                    <div className="px-4">
+                      <img
+                        src={post.imageUrl}
+                        alt="Post media"
+                        className="w-full max-h-[500px] object-cover rounded-lg mb-4"
+                      />
+                    </div>
+                  )}
                   {/* Stats */}
                   <div className="px-4 py-2 border-t border-gray-200 flex items-center justify-between">
                     <div className="flex items-center space-x-4 text-gray-600 text-sm">
@@ -461,7 +469,6 @@ export const PageDashboard: React.FC<PageDashboardProps> = ({
                     </div>
                     <span className="text-xs text-gray-400">ID: {post.id}</span>
                   </div>
-
                   {/* Action Buttons */}
                   <div className="px-4 py-2 flex justify-around">
                     <button className="flex items-center space-x-1 text-gray-600 hover:bg-gray-100 rounded px-2 py-1">
