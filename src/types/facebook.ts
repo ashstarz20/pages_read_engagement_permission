@@ -12,7 +12,7 @@ export interface PagePost {
   message?: string;
   story?: string;
   created_time: string;
-  type: 'photo' | 'video' | 'status' | 'link';
+  type: "photo" | "video" | "status" | "link";
   reactions: {
     summary: {
       total_count: number;

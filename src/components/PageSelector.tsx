@@ -1,6 +1,6 @@
 import React from 'react';
 import { FacebookPage } from '../types/facebook';
-import { Users, ChevronRight, Globe, Shield, CheckCircle } from 'lucide-react';
+import { Users, ChevronRight, Globe, CheckCircle } from 'lucide-react';
 
 interface PageSelectorProps {
   pages: FacebookPage[];
