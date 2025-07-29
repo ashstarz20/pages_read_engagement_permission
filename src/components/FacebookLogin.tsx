@@ -3,20 +3,20 @@ import { AlertCircle } from "lucide-react";
 import { facebookSDK } from "../services/facebookSDK";
 import { FacebookPage, FacebookUser } from "../types/facebook";
 
-interface FacebookGraphPage {
-  id: string;
-  name: string;
-  category: string;
-  followers_count?: number;
-  fan_count?: number;
-  access_token: string;
-}
+// interface FacebookGraphPage {
+//   id: string;
+//   name: string;
+//   category: string;
+//   followers_count?: number;
+//   fan_count?: number;
+//   access_token: string;
+// }
 
-interface PictureResponse {
-  data?: {
-    url?: string;
-  };
-}
+// interface PictureResponse {
+//   data?: {
+//     url?: string;
+//   };
+// }
 
 export const FacebookLogin: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -30,6 +30,43 @@ export const FacebookLogin: React.FC = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
 
+  React.useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const loginStatus = await facebookSDK.getLoginStatus();
+
+        if (loginStatus.status === "connected" && loginStatus.authResponse) {
+          const { accessToken, userID } = loginStatus.authResponse;
+
+          window.FB.api(
+            "/me",
+            { fields: "name,email" },
+            (userResponse: any) => {
+              if (!userResponse || userResponse.error) return;
+
+              const user: FacebookUser = {
+                id: userID,
+                name: userResponse.name,
+                email: userResponse.email || "",
+              };
+
+              setAccessToken(accessToken);
+              setUser(user);
+
+              // Optional: persist
+              localStorage.setItem("fb_user", JSON.stringify(user));
+              localStorage.setItem("fb_token", accessToken);
+            }
+          );
+        }
+      } catch (err) {
+        console.error("Failed to restore Facebook session:", err);
+      }
+    };
+
+    restoreSession();
+  }, []);
+
   const handleLogin = async () => {
     setIsLoading(true);
     setError(null);
@@ -37,6 +74,8 @@ export const FacebookLogin: React.FC = () => {
       const { user, accessToken } = await facebookSDK.login();
       setUser(user);
       setAccessToken(accessToken);
+      localStorage.setItem("fb_user", JSON.stringify(user));
+      localStorage.setItem("fb_token", accessToken);
       setPages([]); // Clear old pages
       setPagesLoaded(false); // Mark pages not loaded yet
     } catch (error) {
@@ -72,6 +111,8 @@ export const FacebookLogin: React.FC = () => {
     await facebookSDK.logout();
     setAccessToken(null);
     setUser(null);
+    localStorage.removeItem("fb_user");
+    localStorage.removeItem("fb_token");
     setPages([]);
     setPagesLoaded(false);
   };
@@ -79,6 +120,8 @@ export const FacebookLogin: React.FC = () => {
   const handleDelete = () => {
     setAccessToken(null);
     setUser(null);
+    localStorage.removeItem("fb_user");
+    localStorage.removeItem("fb_token");
     setPages([]);
     setPagesLoaded(false);
   };

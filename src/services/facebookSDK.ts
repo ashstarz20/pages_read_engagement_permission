@@ -19,6 +19,18 @@ interface FacebookAPIResponse<T> {
   paging?: any;
 }
 
+interface FacebookAuthResponse {
+  accessToken: string;
+  expiresIn: number;
+  signedRequest: string;
+  userID: string;
+}
+
+interface FacebookLoginStatus {
+  status: "connected" | "not_authorized" | "unknown";
+  authResponse?: FacebookAuthResponse;
+}
+
 class FacebookSDKService {
   private isInitialized = false;
   private initPromise: Promise<void> | null = null;
@@ -117,12 +129,33 @@ class FacebookSDKService {
     });
   }
 
-  async getLoginStatus(): Promise<any> {
+  async getLoginStatus(): Promise<FacebookLoginStatus> {
     await this.initialize();
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       window.FB.getLoginStatus((response: any) => {
-        resolve(response);
+        if (!response) {
+          reject(new Error("No response from Facebook SDK"));
+          return;
+        }
+
+        const { status, authResponse } = response;
+
+        if (status === "connected" && authResponse?.accessToken) {
+          resolve({
+            status: "connected",
+            authResponse: {
+              accessToken: authResponse.accessToken,
+              expiresIn: authResponse.expiresIn,
+              signedRequest: authResponse.signedRequest,
+              userID: authResponse.userID,
+            },
+          });
+        } else {
+          resolve({
+            status,
+          });
+        }
       });
     });
   }
