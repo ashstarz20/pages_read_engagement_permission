@@ -1,6 +1,7 @@
 import React from "react";
-import { AlertCircle } from "lucide-react";
+import { Users, Eye, BarChart3, Shield, AlertCircle } from "lucide-react";
 import { facebookSDK } from "../services/facebookSDK";
+import { FACEBOOK_PERMISSIONS } from "../config/facebook";
 
 interface FacebookLoginProps {
   onLogin: (user: unknown, accessToken: string) => void;
@@ -29,123 +30,164 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      {/* Facebook Login Card */}
-      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Facebook Login
-        </h2>
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <div className="max-w-4xl mx-auto bg-white shadow rounded-xl border border-gray-200 p-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Facebook Login</h2>
 
-        {/* App ID Dropdown */}
-        <div className="mb-4">
-          <label className="text-sm font-medium text-gray-600 block mb-1">
-            App ID
-          </label>
-          <select
-            disabled
-            className="w-full bg-gray-100 border border-gray-300 text-gray-700 rounded px-3 py-2 cursor-not-allowed"
-          >
-            <option>2446058352452818</option>
-          </select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              App ID
+            </label>
+            <select
+              className="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-sm cursor-not-allowed"
+              disabled
+            >
+              <option>2446058352452818</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={handleLogin}
+              disabled={isLoading || loading}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded transition-colors w-full sm:w-auto"
+            >
+              {isLoading || loading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Connecting...</span>
+                </div>
+              ) : (
+                <span>Login With Facebook</span>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Login Button */}
-        <button
-          onClick={handleLogin}
-          disabled={isLoading || loading}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition-all"
-        >
-          {isLoading || loading ? "Connecting..." : "Login With Facebook"}
-        </button>
+        <div className="mb-6 text-sm text-gray-600 space-y-1">
+          <div>
+            <strong>App Domains:</strong>{" "}
+            https://pages-read-engagement-permission.vercel.app
+          </div>
+          {/* <div>
+            <strong>Valid OAuth Redirect URIs:</strong>
+            <br />
+            https://pages-read-engagement-permission.vercel.app/facebook/callback/2862133497225149
+          </div> */}
+        </div>
 
-        {/* Error Message */}
+        {/* Permissions Info */}
+        {/* <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 className="font-semibold text-blue-900 mb-2">
+            Required Permissions
+          </h3>
+          <div className="space-y-2 text-sm">
+            {FACEBOOK_PERMISSIONS.map((permission) => (
+              <div key={permission} className="flex items-center text-blue-800">
+                <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                <code className="font-mono text-xs bg-blue-100 px-2 py-1 rounded">
+                  {permission}
+                </code>
+              </div>
+            ))}
+          </div>
+        </div> */}
+
+        {/* Additional Info */}
+        {/* <div className="space-y-3 text-sm mb-6">
+          <div className="flex items-center text-gray-700">
+            <Eye className="w-4 h-4 text-blue-600 mr-3" />
+            <span>Read your page content and posts</span>
+          </div>
+          <div className="flex items-center text-gray-700">
+            <BarChart3 className="w-4 h-4 text-green-600 mr-3" />
+            <span>Access engagement insights and analytics</span>
+          </div>
+          <div className="flex items-center text-gray-700">
+            <Shield className="w-4 h-4 text-purple-600 mr-3" />
+            <span>Secure, privacy-focused data handling</span>
+          </div>
+        </div> */}
+
         {error && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-start space-x-2 text-sm text-red-700">
-            <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
-            <div>
-              <strong>Login Error:</strong> {error}
+          <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
+            <div className="flex items-start space-x-2">
+              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-red-800">
+                <strong>Login Error:</strong> {error}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Static Details */}
-        <div className="mt-4 text-sm text-gray-700 space-y-1">
-          <p>
-            <strong>App Domains:</strong>{" "}
-            https://pages-read-engagement-permission.vercel.app
-          </p>
-          {/* <p>
-            <strong>Valid OAuth Redirect URIs:</strong>{" "}
-            https://pages-read-engagement-permission.vercel.app/facebook/callback/2862133497225149
-          </p> */}
-        </div>
-      </div>
+        {/* Placeholder Tables */}
+        <div className="mt-10">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Facebook Accounts
+          </h3>
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full table-auto text-sm border border-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 border">Facebook_id</th>
+                  <th className="px-4 py-2 border">app_id</th>
+                  <th className="px-4 py-2 border">Name</th>
+                  <th className="px-4 py-2 border">access_token</th>
+                  <th className="px-4 py-2 border">updated_at</th>
+                  <th className="px-4 py-2 border">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
+                    Manage
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-      {/* Facebook Accounts Table */}
-      <div className="max-w-5xl mx-auto bg-white shadow-md rounded-xl p-6 mb-8">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Facebook Accounts
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full border text-sm text-gray-700">
-            <thead className="bg-gray-100 border-b">
-              <tr>
-                <th className="px-4 py-2">Facebook_id</th>
-                <th className="px-4 py-2">app_id</th>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">access_token</th>
-                <th className="px-4 py-2">updated_at</th>
-                <th className="px-4 py-2">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Placeholder row - replace with dynamic mapping if needed */}
-              <tr className="border-t">
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-blue-600 underline cursor-pointer">
-                  —
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Facebook Pages
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto text-sm border border-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 border">Facebook_id</th>
+                  <th className="px-4 py-2 border">page_id</th>
+                  <th className="px-4 py-2 border">Page_name</th>
+                  <th className="px-4 py-2 border">Page_access_token</th>
+                  <th className="px-4 py-2 border">Page_category_list</th>
+                  <th className="px-4 py-2 border">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-gray-400">--</td>
+                  <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
+                    Manage
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {/* Facebook Pages Table */}
-      <div className="max-w-5xl mx-auto bg-white shadow-md rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Facebook Pages
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full border text-sm text-gray-700">
-            <thead className="bg-gray-100 border-b">
-              <tr>
-                <th className="px-4 py-2">Facebook_id</th>
-                <th className="px-4 py-2">page_id</th>
-                <th className="px-4 py-2">Page_name</th>
-                <th className="px-4 py-2">Page_access_token</th>
-                <th className="px-4 py-2">Page_category_list</th>
-                <th className="px-4 py-2">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Placeholder row - replace with dynamic mapping if needed */}
-              <tr className="border-t">
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-gray-500">—</td>
-                <td className="px-4 py-2 text-blue-600 underline cursor-pointer">
-                  —
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div className="mt-8 text-xs text-gray-500 text-center">
+          By continuing, you agree to our Privacy Policy and Data Deletion
+          procedures.
+          <br />
+          This demo requires a valid Facebook App ID in environment variables.
         </div>
       </div>
     </div>
