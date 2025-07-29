@@ -292,6 +292,14 @@ class FacebookSDKService {
       });
     });
   }
+
+  async fetchPaginatedPages(url: string): Promise<any> {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error("Failed to fetch paginated pages");
+    }
+    return await res.json();
+  }
 }
 
 export const facebookSDK = new FacebookSDKService();

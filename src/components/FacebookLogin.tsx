@@ -3,6 +3,21 @@ import { AlertCircle } from "lucide-react";
 import { facebookSDK } from "../services/facebookSDK";
 import { FacebookPage, FacebookUser } from "../types/facebook";
 
+interface FacebookGraphPage {
+  id: string;
+  name: string;
+  category: string;
+  followers_count?: number;
+  fan_count?: number;
+  access_token: string;
+}
+
+interface PictureResponse {
+  data?: {
+    url?: string;
+  };
+}
+
 export const FacebookLogin: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -33,11 +48,59 @@ export const FacebookLogin: React.FC = () => {
   const handleLoadPages = async () => {
     if (!accessToken) return;
     setIsLoadingPages(true);
+    setError(null);
+
+    const fetchAllPages = async (
+      token: string,
+      nextUrl?: string,
+      accumulatedPages: FacebookPage[] = []
+    ): Promise<FacebookPage[]> => {
+      const response = nextUrl
+        ? await facebookSDK.fetchPaginatedPages(nextUrl)
+        : await facebookSDK.getUserPages(token);
+
+      const newPages: FacebookPage[] = await Promise.all(
+        response.data.map(async (page: FacebookGraphPage) => {
+          const picRes: PictureResponse = await new Promise((res) => {
+            window.FB.api(
+              `/${page.id}/picture`,
+              "GET",
+              {
+                access_token: token,
+                type: "large",
+                redirect: false,
+              },
+              res
+            );
+          });
+
+          return {
+            id: page.id,
+            name: page.name,
+            category: page.category,
+            followers_count: page.followers_count || page.fan_count || 0,
+            fan_count: page.fan_count || 0,
+            access_token: page.access_token,
+            picture: picRes?.data?.url || "",
+          };
+        })
+      );
+
+      const allPages = [...accumulatedPages, ...newPages];
+
+      if (response.paging?.next) {
+        return fetchAllPages(token, response.paging.next, allPages);
+      }
+
+      return allPages;
+    };
+
     try {
-      const fetchedPages = await facebookSDK.getUserPages(accessToken);
-      setPages(fetchedPages);
+      const allPages = await fetchAllPages(accessToken);
+      setPages(allPages);
       setPagesLoaded(true);
     } catch (error) {
+      console.error("Error loading paginated pages:", error);
       setError(
         `Failed to load pages - ${
           error instanceof Error ? error.message : "Unknown error"
