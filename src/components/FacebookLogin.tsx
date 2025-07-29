@@ -27,6 +27,8 @@ export const FacebookLogin: React.FC = () => {
   const [pages, setPages] = React.useState<FacebookPage[]>([]);
   const [pagesLoaded, setPagesLoaded] = React.useState(false);
   const [isLoadingPages, setIsLoadingPages] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -251,6 +253,32 @@ export const FacebookLogin: React.FC = () => {
             Facebook Pages
           </h3>
           <div className="overflow-x-auto">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-600">
+                Showing{" "}
+                {Math.min((currentPage - 1) * pageSize + 1, pages.length)}–
+                {Math.min(currentPage * pageSize, pages.length)} of{" "}
+                {pages.length} pages
+              </div>
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-600">Rows per page:</label>
+                <select
+                  className="border rounded px-2 py-1 text-sm"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1); // reset to first page when pageSize changes
+                  }}
+                >
+                  {[10, 20, 30, 40, 50].map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <table className="w-full table-auto text-sm border border-gray-200">
               <thead className="bg-gray-100">
                 <tr>
@@ -273,20 +301,22 @@ export const FacebookLogin: React.FC = () => {
                     </td>
                   </tr>
                 ) : pagesLoaded && pages.length > 0 ? (
-                  pages.map((page) => (
-                    <tr key={page.id}>
-                      <td className="px-4 py-2 border">{user?.id || "--"}</td>
-                      <td className="px-4 py-2 border">{page.id}</td>
-                      <td className="px-4 py-2 border">{page.name}</td>
-                      <td className="px-4 py-2 border">
-                        {page.access_token.slice(0, 20)}...
-                      </td>
-                      <td className="px-4 py-2 border">{page.category}</td>
-                      <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
-                        Manage
-                      </td>
-                    </tr>
-                  ))
+                  pages
+                    .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                    .map((page) => (
+                      <tr key={page.id}>
+                        <td className="px-4 py-2 border">{user?.id || "--"}</td>
+                        <td className="px-4 py-2 border">{page.id}</td>
+                        <td className="px-4 py-2 border">{page.name}</td>
+                        <td className="px-4 py-2 border">
+                          {page.access_token.slice(0, 20)}...
+                        </td>
+                        <td className="px-4 py-2 border">{page.category}</td>
+                        <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
+                          Manage
+                        </td>
+                      </tr>
+                    ))
                 ) : (
                   <tr>
                     <td colSpan={6} className="text-center text-gray-400 py-4">
@@ -298,6 +328,34 @@ export const FacebookLogin: React.FC = () => {
                 )}
               </tbody>
             </table>
+
+            <div className="flex items-center justify-between mt-3 text-sm text-gray-600">
+              <div>
+                Page {currentPage} of {Math.ceil(pages.length / pageSize)}
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  ⬅ Back
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      Math.min(prev + 1, Math.ceil(pages.length / pageSize))
+                    )
+                  }
+                  disabled={currentPage >= Math.ceil(pages.length / pageSize)}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Next ➡
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
