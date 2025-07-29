@@ -14,12 +14,10 @@ export const FacebookLogin: React.FC = () => {
   const handleLogin = async () => {
     setIsLoading(true);
     setError(null);
-
     try {
       const { user, accessToken } = await facebookSDK.login();
       setUser(user);
       setAccessToken(accessToken);
-
       const fetchedPages = await facebookSDK.getUserPages(accessToken);
       setPages(fetchedPages);
     } catch (error) {
@@ -28,6 +26,33 @@ export const FacebookLogin: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLoadPages = async () => {
+    if (!accessToken) return;
+    try {
+      const fetchedPages = await facebookSDK.getUserPages(accessToken);
+      setPages(fetchedPages);
+    } catch (error) {
+      setError(
+        `Failed to load pages - ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
+  const handleLogout = async () => {
+    await facebookSDK.logout();
+    setAccessToken(null);
+    setUser(null);
+    setPages([]);
+  };
+
+  const handleDelete = () => {
+    setAccessToken(null);
+    setUser(null);
+    setPages([]);
   };
 
   return (
@@ -111,8 +136,25 @@ export const FacebookLogin: React.FC = () => {
                     <td className="px-4 py-2 border">
                       {new Date().toLocaleString()}
                     </td>
-                    <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
-                      Manage
+                    <td className="px-4 py-2 border space-x-2">
+                      <button
+                        onClick={handleLoadPages}
+                        className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
+                      >
+                        Load Pages
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
+                      >
+                        Logout
+                      </button>
+                      <button
+                        onClick={handleDelete}
+                        className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ) : (
