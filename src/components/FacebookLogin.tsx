@@ -10,6 +10,7 @@ export const FacebookLogin: React.FC = () => {
   const [accessToken, setAccessToken] = React.useState<string | null>(null);
   const [user, setUser] = React.useState<FacebookUser | null>(null);
   const [pages, setPages] = React.useState<FacebookPage[]>([]);
+  const [pagesLoaded, setPagesLoaded] = React.useState(false);
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -18,8 +19,8 @@ export const FacebookLogin: React.FC = () => {
       const { user, accessToken } = await facebookSDK.login();
       setUser(user);
       setAccessToken(accessToken);
-      const fetchedPages = await facebookSDK.getUserPages(accessToken);
-      setPages(fetchedPages);
+      setPages([]); // Clear old pages
+      setPagesLoaded(false); // Mark pages not loaded yet
     } catch (error) {
       console.error("Facebook login error:", error);
       setError(error instanceof Error ? error.message : "Login failed");
@@ -33,6 +34,7 @@ export const FacebookLogin: React.FC = () => {
     try {
       const fetchedPages = await facebookSDK.getUserPages(accessToken);
       setPages(fetchedPages);
+      setPagesLoaded(true);
     } catch (error) {
       setError(
         `Failed to load pages - ${
@@ -47,12 +49,14 @@ export const FacebookLogin: React.FC = () => {
     setAccessToken(null);
     setUser(null);
     setPages([]);
+    setPagesLoaded(false);
   };
 
   const handleDelete = () => {
     setAccessToken(null);
     setUser(null);
     setPages([]);
+    setPagesLoaded(false);
   };
 
   return (
@@ -186,7 +190,7 @@ export const FacebookLogin: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {pages.length > 0 ? (
+                {pagesLoaded && pages.length > 0 ? (
                   pages.map((page) => (
                     <tr key={page.id}>
                       <td className="px-4 py-2 border">{user?.id || "--"}</td>
@@ -204,7 +208,9 @@ export const FacebookLogin: React.FC = () => {
                 ) : (
                   <tr>
                     <td colSpan={6} className="text-center text-gray-400 py-4">
-                      No pages available
+                      {pagesLoaded
+                        ? "No pages available"
+                        : "Click 'Load Pages' to view"}
                     </td>
                   </tr>
                 )}
