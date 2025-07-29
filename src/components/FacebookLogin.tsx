@@ -11,6 +11,7 @@ export const FacebookLogin: React.FC = () => {
   const [user, setUser] = React.useState<FacebookUser | null>(null);
   const [pages, setPages] = React.useState<FacebookPage[]>([]);
   const [pagesLoaded, setPagesLoaded] = React.useState(false);
+  const [isLoadingPages, setIsLoadingPages] = React.useState(false);
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -31,6 +32,7 @@ export const FacebookLogin: React.FC = () => {
 
   const handleLoadPages = async () => {
     if (!accessToken) return;
+    setIsLoadingPages(true);
     try {
       const fetchedPages = await facebookSDK.getUserPages(accessToken);
       setPages(fetchedPages);
@@ -41,6 +43,8 @@ export const FacebookLogin: React.FC = () => {
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
+    } finally {
+      setIsLoadingPages(false);
     }
   };
 
@@ -190,7 +194,16 @@ export const FacebookLogin: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {pagesLoaded && pages.length > 0 ? (
+                {isLoadingPages ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-gray-500">
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Loading pages...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : pagesLoaded && pages.length > 0 ? (
                   pages.map((page) => (
                     <tr key={page.id}>
                       <td className="px-4 py-2 border">{user?.id || "--"}</td>
