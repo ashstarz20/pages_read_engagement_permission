@@ -1,26 +1,27 @@
 import React from "react";
-import { Users, Eye, BarChart3, Shield, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { facebookSDK } from "../services/facebookSDK";
-import { FACEBOOK_PERMISSIONS } from "../config/facebook";
+import { FacebookPage, FacebookUser } from "../types/facebook";
 
-interface FacebookLoginProps {
-  onLogin: (user: unknown, accessToken: string) => void;
-  loading?: boolean;
-}
-
-export const FacebookLogin: React.FC<FacebookLoginProps> = ({
-  onLogin,
-  loading = false,
-}) => {
+export const FacebookLogin: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  const [accessToken, setAccessToken] = React.useState<string | null>(null);
+  const [user, setUser] = React.useState<FacebookUser | null>(null);
+  const [pages, setPages] = React.useState<FacebookPage[]>([]);
 
   const handleLogin = async () => {
     setIsLoading(true);
     setError(null);
+
     try {
       const { user, accessToken } = await facebookSDK.login();
-      onLogin(user, accessToken);
+      setUser(user);
+      setAccessToken(accessToken);
+
+      const fetchedPages = await facebookSDK.getUserPages(accessToken);
+      setPages(fetchedPages);
     } catch (error) {
       console.error("Facebook login error:", error);
       setError(error instanceof Error ? error.message : "Login failed");
@@ -31,7 +32,7 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-4xl mx-auto bg-white shadow rounded-xl border border-gray-200 p-6">
+      <div className="max-w-5xl mx-auto bg-white shadow rounded-xl border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Facebook Login</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
@@ -49,10 +50,10 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({
           <div className="flex items-end">
             <button
               onClick={handleLogin}
-              disabled={isLoading || loading}
+              disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded transition-colors w-full sm:w-auto"
             >
-              {isLoading || loading ? (
+              {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   <span>Connecting...</span>
@@ -69,45 +70,7 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({
             <strong>App Domains:</strong>{" "}
             https://pages-read-engagement-permission.vercel.app
           </div>
-          {/* <div>
-            <strong>Valid OAuth Redirect URIs:</strong>
-            <br />
-            https://pages-read-engagement-permission.vercel.app/facebook/callback/2862133497225149
-          </div> */}
         </div>
-
-        {/* Permissions Info */}
-        {/* <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="font-semibold text-blue-900 mb-2">
-            Required Permissions
-          </h3>
-          <div className="space-y-2 text-sm">
-            {FACEBOOK_PERMISSIONS.map((permission) => (
-              <div key={permission} className="flex items-center text-blue-800">
-                <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
-                <code className="font-mono text-xs bg-blue-100 px-2 py-1 rounded">
-                  {permission}
-                </code>
-              </div>
-            ))}
-          </div>
-        </div> */}
-
-        {/* Additional Info */}
-        {/* <div className="space-y-3 text-sm mb-6">
-          <div className="flex items-center text-gray-700">
-            <Eye className="w-4 h-4 text-blue-600 mr-3" />
-            <span>Read your page content and posts</span>
-          </div>
-          <div className="flex items-center text-gray-700">
-            <BarChart3 className="w-4 h-4 text-green-600 mr-3" />
-            <span>Access engagement insights and analytics</span>
-          </div>
-          <div className="flex items-center text-gray-700">
-            <Shield className="w-4 h-4 text-purple-600 mr-3" />
-            <span>Secure, privacy-focused data handling</span>
-          </div>
-        </div> */}
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
@@ -120,7 +83,6 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({
           </div>
         )}
 
-        {/* Placeholder Tables */}
         <div className="mt-10">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">
             Facebook Accounts
@@ -138,16 +100,28 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
-                    Manage
-                  </td>
-                </tr>
+                {user && accessToken ? (
+                  <tr>
+                    <td className="px-4 py-2 border">{user.id}</td>
+                    <td className="px-4 py-2 border">2446058352452818</td>
+                    <td className="px-4 py-2 border">{user.name}</td>
+                    <td className="px-4 py-2 border">
+                      {accessToken.slice(0, 20)}...
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {new Date().toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
+                      Manage
+                    </td>
+                  </tr>
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center text-gray-400 py-4">
+                      Not logged in
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -168,16 +142,28 @@ export const FacebookLogin: React.FC<FacebookLoginProps> = ({
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-gray-400">--</td>
-                  <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
-                    Manage
-                  </td>
-                </tr>
+                {pages.length > 0 ? (
+                  pages.map((page) => (
+                    <tr key={page.id}>
+                      <td className="px-4 py-2 border">{user?.id || "--"}</td>
+                      <td className="px-4 py-2 border">{page.id}</td>
+                      <td className="px-4 py-2 border">{page.name}</td>
+                      <td className="px-4 py-2 border">
+                        {page.access_token.slice(0, 20)}...
+                      </td>
+                      <td className="px-4 py-2 border">{page.category}</td>
+                      <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
+                        Manage
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center text-gray-400 py-4">
+                      No pages available
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
