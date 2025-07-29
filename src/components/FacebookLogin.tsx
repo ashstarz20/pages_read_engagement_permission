@@ -210,8 +210,15 @@ export const FacebookLogin: React.FC = () => {
                     <td className="px-4 py-2 border">2446058352452818</td>
                     <td className="px-4 py-2 border">{user.name}</td>
                     <td className="px-4 py-2 border">
-                      {accessToken.slice(0, 20)}...
+                      <input
+                        type="text"
+                        readOnly
+                        value={accessToken}
+                        className="w-full bg-gray-100 text-xs px-2 py-1 border rounded cursor-pointer select-all"
+                        onClick={(e) => (e.target as HTMLInputElement).select()}
+                      />
                     </td>
+
                     <td className="px-4 py-2 border">
                       {new Date().toLocaleString()}
                     </td>
@@ -309,8 +316,17 @@ export const FacebookLogin: React.FC = () => {
                         <td className="px-4 py-2 border">{page.id}</td>
                         <td className="px-4 py-2 border">{page.name}</td>
                         <td className="px-4 py-2 border">
-                          {page.access_token.slice(0, 20)}...
+                          <input
+                            type="text"
+                            readOnly
+                            value={page.access_token}
+                            className="w-full bg-gray-100 text-xs px-2 py-1 border rounded cursor-pointer select-all"
+                            onClick={(e) =>
+                              (e.target as HTMLInputElement).select()
+                            }
+                          />
                         </td>
+
                         <td className="px-4 py-2 border">{page.category}</td>
                         <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
                           Manage
