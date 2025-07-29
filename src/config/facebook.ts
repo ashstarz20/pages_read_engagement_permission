@@ -13,6 +13,13 @@ export const FACEBOOK_PERMISSIONS = [
   "pages_read_engagement", // Advanced Access permission for reading engagement data
   "pages_read_user_content", // Read user-generated content on pages
   "read_insights", // Read page insights and analytics
+  "business_management", // Manage business assets
+  "leads_retrieval", // Retrieve leads from Facebook forms
+  "pages_manage_metadata", // Manage page metadata
+  "pages_manage_posts", // Manage posts on pages
+  "pages_manage_engagement", // Manage engagement on pages
+  "pages_manage_ads", // Manage ads on pages
+  "ads_management", // Manage ads
 ];
 
 export const FACEBOOK_SCOPES = FACEBOOK_PERMISSIONS.join(",");
