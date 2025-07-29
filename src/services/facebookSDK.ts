@@ -14,6 +14,11 @@ declare global {
   }
 }
 
+interface FacebookAPIResponse<T> {
+  data: T[];
+  paging?: any;
+}
+
 class FacebookSDKService {
   private isInitialized = false;
   private initPromise: Promise<void> | null = null;
@@ -122,7 +127,9 @@ class FacebookSDKService {
     });
   }
 
-  async getUserPages(accessToken: string): Promise<FacebookPage[]> {
+  async getUserPages(
+    accessToken: string
+  ): Promise<FacebookAPIResponse<FacebookPage>> {
     await this.initialize();
 
     return new Promise((resolve, reject) => {
@@ -145,7 +152,6 @@ class FacebookSDKService {
           try {
             const pages: FacebookPage[] = await Promise.all(
               response.data.map(async (page: any) => {
-                // Fetch each page's profile picture
                 const picRes: any = await new Promise((res) => {
                   window.FB.api(
                     `/${page.id}/picture`,
@@ -158,7 +164,6 @@ class FacebookSDKService {
                     res
                   );
                 });
-                console.log(`Picture response for ${page.name}:`, picRes);
 
                 return {
                   id: page.id,
@@ -167,12 +172,12 @@ class FacebookSDKService {
                   followers_count: page.followers_count || page.fan_count || 0,
                   fan_count: page.fan_count || 0,
                   access_token: page.access_token,
-                  picture: picRes.data?.url || "", // JSON response with image URL
+                  picture: picRes?.data?.url || "",
                 };
               })
             );
 
-            resolve(pages);
+            resolve({ data: pages, paging: response.paging });
           } catch (err) {
             reject(new Error(`Failed fetching page pictures: ${err}`));
           }
