@@ -134,7 +134,7 @@ class FacebookSDKService {
 
     return new Promise((resolve, reject) => {
       window.FB.api(
-        "/me/accounts",
+        "/me/accounts?limit=2",
         "GET",
         {
           access_token: accessToken,
