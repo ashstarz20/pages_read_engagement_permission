@@ -136,25 +136,27 @@ export const FacebookLogin: React.FC = () => {
                     <td className="px-4 py-2 border">
                       {new Date().toLocaleString()}
                     </td>
-                    <td className="px-4 py-2 border space-x-2">
-                      <button
-                        onClick={handleLoadPages}
-                        className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
-                      >
-                        Load Pages
-                      </button>
-                      <button
-                        onClick={handleLogout}
-                        className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
-                      >
-                        Logout
-                      </button>
-                      <button
-                        onClick={handleDelete}
-                        className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                      >
-                        Delete
-                      </button>
+                    <td className="px-4 py-2 border">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={handleLoadPages}
+                          className="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition"
+                        >
+                          Load Pages
+                        </button>
+                        <button
+                          onClick={handleLogout}
+                          className="text-xs px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition"
+                        >
+                          Logout
+                        </button>
+                        <button
+                          onClick={handleDelete}
+                          className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
