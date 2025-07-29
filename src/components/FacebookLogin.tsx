@@ -59,6 +59,12 @@ export const FacebookLogin: React.FC = () => {
         ? await facebookSDK.fetchPaginatedPages(nextUrl)
         : await facebookSDK.getUserPages(token);
 
+      if (!response || !Array.isArray(response.data)) {
+        throw new Error(
+          "Invalid response from Facebook API (data is missing or not an array)."
+        );
+      }
+
       const newPages: FacebookPage[] = await Promise.all(
         response.data.map(async (page: FacebookGraphPage) => {
           const picRes: PictureResponse = await new Promise((res) => {
