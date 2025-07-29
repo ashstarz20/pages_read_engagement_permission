@@ -134,7 +134,7 @@ class FacebookSDKService {
 
     return new Promise((resolve, reject) => {
       window.FB.api(
-        "/me/accounts?limit=2",
+        "/me/accounts?limit=2", // Limit to 2 pages directly
         "GET",
         {
           access_token: accessToken,
@@ -149,9 +149,10 @@ class FacebookSDKService {
             return;
           }
 
+          const pagesToFetch = response.data.slice(0, 2); // just 2 pages max
           try {
             const pages: FacebookPage[] = await Promise.all(
-              response.data.map(async (page: any) => {
+              pagesToFetch.map(async (page: any) => {
                 const picRes: any = await new Promise((res) => {
                   window.FB.api(
                     `/${page.id}/picture`,
@@ -177,7 +178,7 @@ class FacebookSDKService {
               })
             );
 
-            resolve({ data: pages, paging: response.paging });
+            resolve({ data: pages, paging: null });
           } catch (err) {
             reject(new Error(`Failed fetching page pictures: ${err}`));
           }

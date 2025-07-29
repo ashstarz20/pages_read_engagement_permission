@@ -52,63 +52,12 @@ export const FacebookLogin: React.FC = () => {
     setIsLoadingPages(true);
     setError(null);
 
-    const fetchAllPages = async (
-      token: string,
-      nextUrl?: string,
-      accumulatedPages: FacebookPage[] = []
-    ): Promise<FacebookPage[]> => {
-      const response = nextUrl
-        ? await facebookSDK.fetchPaginatedPages(nextUrl)
-        : await facebookSDK.getUserPages(token);
-
-      if (!response || !Array.isArray(response.data)) {
-        throw new Error(
-          "Invalid response from Facebook API (data is missing or not an array)."
-        );
-      }
-
-      const newPages: FacebookPage[] = await Promise.all(
-        response.data.map(async (page: FacebookGraphPage) => {
-          const picRes: PictureResponse = await new Promise((res) => {
-            window.FB.api(
-              `/${page.id}/picture`,
-              "GET",
-              {
-                access_token: token,
-                type: "large",
-                redirect: false,
-              },
-              res
-            );
-          });
-
-          return {
-            id: page.id,
-            name: page.name,
-            category: page.category,
-            followers_count: page.followers_count || page.fan_count || 0,
-            fan_count: page.fan_count || 0,
-            access_token: page.access_token,
-            picture: picRes?.data?.url || "",
-          };
-        })
-      );
-
-      const allPages = [...accumulatedPages, ...newPages];
-
-      if (response.paging?.next) {
-        return fetchAllPages(token, response.paging.next, allPages);
-      }
-
-      return allPages;
-    };
-
     try {
-      const allPages = await fetchAllPages(accessToken);
-      setPages(allPages);
+      const response = await facebookSDK.getUserPages(accessToken);
+      setPages(response.data || []);
       setPagesLoaded(true);
     } catch (error) {
-      console.error("Error loading paginated pages:", error);
+      console.error("Error loading pages:", error);
       setError(
         `Failed to load pages - ${
           error instanceof Error ? error.message : "Unknown error"
