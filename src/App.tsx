@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { FacebookLogin } from './components/FacebookLogin';
-import { PageSelector } from './components/PageSelector';
-import { PageDashboard } from './components/PageDashboard';
-import { FacebookPage, FacebookUser } from './types/facebook';
-import { facebookSDK } from './services/facebookSDK';
+import React, { useState } from "react";
+import { FacebookLogin } from "./components/FacebookLogin";
+import { PageSelector } from "./components/PageSelector";
+import { PageDashboard } from "./components/PageDashboard";
+import { FacebookPage, FacebookUser } from "./types/facebook";
+import { facebookSDK } from "./services/facebookSDK";
+import { AdCreation } from "./components/create-ads";
 
-type AppState = 'login' | 'pageSelection' | 'dashboard';
+type AppState = "login" | "pageSelection" | "dashboard" | "createAd";
 
 function App() {
-  const [currentState, setCurrentState] = useState<AppState>('login');
+  const [currentState, setCurrentState] = useState<AppState>("login");
   const [selectedPage, setSelectedPage] = useState<FacebookPage | null>(null);
   const [user, setUser] = useState<FacebookUser | null>(null);
-  const [accessToken, setAccessToken] = useState<string>('');
+  const [accessToken, setAccessToken] = useState<string>("");
   const [pages, setPages] = useState<FacebookPage[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -24,12 +25,12 @@ function App() {
       // Fetch user's pages
       const userPages = await facebookSDK.getUserPages(token);
       setPages(userPages);
-      setCurrentState('pageSelection');
+      setCurrentState("pageSelection");
     } catch (error) {
-      console.error('Failed to fetch pages:', error);
+      console.error("Failed to fetch pages:", error);
       // Still proceed to page selection even if no pages found
       setPages([]);
-      setCurrentState('pageSelection');
+      setCurrentState("pageSelection");
     } finally {
       setLoading(false);
     }
@@ -37,41 +38,45 @@ function App() {
 
   const handlePageSelect = (page: FacebookPage) => {
     setSelectedPage(page);
-    setCurrentState('dashboard');
+    setCurrentState("dashboard");
   };
 
   const handleBack = () => {
-    if (currentState === 'dashboard') {
-      setCurrentState('pageSelection');
+    if (currentState === "dashboard") {
+      setCurrentState("pageSelection");
       setSelectedPage(null);
-    } else if (currentState === 'pageSelection') {
-      setCurrentState('login');
+    } else if (currentState === "pageSelection") {
+      setCurrentState("login");
       setUser(null);
-      setAccessToken('');
+      setAccessToken("");
       setPages([]);
     }
   };
 
   return (
     <div className="min-h-screen">
-      {currentState === 'login' && (
+      {currentState === "login" && (
         <FacebookLogin onLogin={handleLogin} loading={loading} />
       )}
-      
-      {currentState === 'pageSelection' && (
-        <PageSelector 
+
+      {currentState === "pageSelection" && (
+        <PageSelector
           pages={pages}
           onSelectPage={handlePageSelect}
           onBack={handleBack}
           loading={loading}
         />
       )}
-      
-      {currentState === 'dashboard' && selectedPage && (
-        <PageDashboard 
+
+      {currentState === "createAd" && selectedPage && (
+        <AdCreation
           page={selectedPage}
-          onBack={handleBack}
+          onBack={() => setCurrentState("dashboard")}
         />
+      )}
+
+      {currentState === "dashboard" && selectedPage && (
+        <PageDashboard page={selectedPage} onBack={handleBack} />
       )}
     </div>
   );

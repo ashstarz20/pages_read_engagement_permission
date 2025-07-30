@@ -29,6 +29,18 @@ export const FacebookLogin: React.FC = () => {
   const [isLoadingPages, setIsLoadingPages] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
+  // Define possible app states
+  // type AppState = "login" | "createAd";
+
+  // const [currentState, setCurrentState] = React.useState<AppState>("login");
+  const [selectedPage, setSelectedPage] = React.useState<FacebookPage | null>(
+    null
+  );
+
+  // // Navigate to ad creation
+  // const handleCreateAd = () => {
+  //   setCurrentState("createAd");
+  // };
 
   React.useEffect(() => {
     const restoreSession = async () => {
@@ -248,6 +260,47 @@ export const FacebookLogin: React.FC = () => {
             </table>
           </div>
 
+          {selectedPage && (
+            <div className="mb-6 p-4 border border-blue-200 bg-blue-50 rounded-xl">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-blue-800">
+                  <strong>Selected Page:</strong> {selectedPage.name} (ID:{" "}
+                  {selectedPage.id})
+                </div>
+                <button
+                  onClick={async () => {
+                    setIsLoadingPages(true);
+                    setError(null);
+                    try {
+                      const result = await facebookSDK.createAdCampaign(
+                        selectedPage.id,
+                        selectedPage.access_token,
+                        `Boosted post for ${selectedPage.name}`,
+                        "100"
+                      );
+                      alert(
+                        `Ad Campaign Created: ${(result as { id: string }).id}`
+                      );
+                    } catch (err: unknown) {
+                      setError(
+                        typeof err === "object" &&
+                          err !== null &&
+                          "message" in err
+                          ? String((err as { message?: unknown }).message)
+                          : "Ad creation failed"
+                      );
+                    } finally {
+                      setIsLoadingPages(false);
+                    }
+                  }}
+                  className="text-xs bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                >
+                  Create Ad for Selected Page
+                </button>
+              </div>
+            </div>
+          )}
+
           <h3 className="text-lg font-semibold text-gray-800 mb-2">
             Facebook Pages
           </h3>
@@ -320,8 +373,13 @@ export const FacebookLogin: React.FC = () => {
                         </td>
 
                         <td className="px-4 py-2 border">{page.category}</td>
-                        <td className="px-4 py-2 border text-blue-600 underline cursor-pointer">
-                          Manage
+                        <td className="px-4 py-2 border">
+                          <button
+                            onClick={() => setSelectedPage(page)}
+                            className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 transition"
+                          >
+                            Select
+                          </button>
                         </td>
                       </tr>
                     ))

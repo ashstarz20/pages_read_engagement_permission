@@ -322,6 +322,119 @@ class FacebookSDKService {
     });
   }
 
+  async createAdCampaign(
+    pageId: string,
+    pageAccessToken: string,
+    adText: string,
+    budget: string
+  ): Promise<unknown> {
+    const adAccountId = "act_1397138827241824"; // ✅ Replace with your real ad account ID
+    const campaignName = `Quick Boost - ${new Date().toISOString()}`;
+
+    // 1. Create Campaign
+    const campaignRes = await fetch(
+      `https://graph.facebook.com/v19.0/${adAccountId}/campaigns`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          name: campaignName,
+          objective: "PAGE_LIKES", // or POST_ENGAGEMENT / REACH etc.
+          status: "PAUSED",
+          access_token: pageAccessToken,
+        }),
+      }
+    );
+
+    const campaign = await campaignRes.json();
+    if (campaign.error)
+      throw new Error(`Campaign Error: ${campaign.error.message}`);
+
+    const campaignId = campaign.id;
+
+    // 2. Create Ad Set
+    const adSetRes = await fetch(
+      `https://graph.facebook.com/v19.0/${adAccountId}/adsets`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          name: `Ad Set - ${campaignName}`,
+          campaign_id: campaignId,
+          daily_budget: (parseFloat(budget) * 100).toString(), // INR -> cents
+          billing_event: "IMPRESSIONS",
+          optimization_goal: "REACH",
+          targeting: JSON.stringify({
+            geo_locations: {
+              countries: ["IN"],
+            },
+          }),
+          start_time: new Date(Date.now() + 60000).toISOString(), // start in 1 min
+          end_time: new Date(Date.now() + 86400000).toISOString(), // end in 1 day
+          status: "PAUSED",
+          access_token: pageAccessToken,
+        }),
+      }
+    );
+
+    const adSet = await adSetRes.json();
+    if (adSet.error) throw new Error(`Ad Set Error: ${adSet.error.message}`);
+
+    const adSetId = adSet.id;
+
+    // 3. Create Ad Creative
+    const creativeRes = await fetch(
+      `https://graph.facebook.com/v19.0/${adAccountId}/adcreatives`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          name: `Creative - ${campaignName}`,
+          object_story_spec: JSON.stringify({
+            page_id: pageId,
+            link_data: {
+              message: adText,
+              link: "https://facebook.com", // 👈 Optional link
+            },
+          }),
+          access_token: pageAccessToken,
+        }),
+      }
+    );
+
+    const creative = await creativeRes.json();
+    if (creative.error)
+      throw new Error(`Creative Error: ${creative.error.message}`);
+
+    const creativeId = creative.id;
+
+    // 4. Create the Ad
+    const adRes = await fetch(
+      `https://graph.facebook.com/v19.0/${adAccountId}/ads`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          name: `Ad - ${campaignName}`,
+          adset_id: adSetId,
+          creative: JSON.stringify({ creative_id: creativeId }),
+          status: "PAUSED",
+          access_token: pageAccessToken,
+        }),
+      }
+    );
+
+    const ad = await adRes.json();
+    if (ad.error) throw new Error(`Ad Error: ${ad.error.message}`);
+
+    return {
+      campaignId,
+      adSetId,
+      creativeId,
+      adId: ad.id,
+    };
+  }
+
   async logout(): Promise<void> {
     await this.initialize();
 
