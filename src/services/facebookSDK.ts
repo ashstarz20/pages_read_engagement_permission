@@ -341,7 +341,7 @@ class FacebookSDKService {
           name: campaignName,
           objective: "PAGE_LIKES", // or POST_ENGAGEMENT / REACH etc.
           status: "PAUSED",
-          special_ad_categories: "",
+          special_ad_categories: JSON.stringify([]),
           access_token: pageAccessToken,
         }),
       }
