@@ -339,7 +339,7 @@ class FacebookSDKService {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           name: campaignName,
-          objective: "PAGE_LIKES", // or POST_ENGAGEMENT / REACH etc.
+          objective: "OUTCOME_LEADS", // or POST_ENGAGEMENT / REACH etc.
           status: "PAUSED",
           special_ad_categories: JSON.stringify([]),
           access_token: pageAccessToken,
