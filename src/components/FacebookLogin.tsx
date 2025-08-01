@@ -29,6 +29,7 @@ export const FacebookLogin: React.FC = () => {
   const [isLoadingPages, setIsLoadingPages] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
+  const [createdFormId, setCreatedFormId] = React.useState<string | null>(null);
   // Define possible app states
   // type AppState = "login" | "createAd";
 
@@ -262,6 +263,40 @@ export const FacebookLogin: React.FC = () => {
 
           {selectedPage && (
             <div className="mb-6 p-4 border border-blue-200 bg-blue-50 rounded-xl">
+              <div className="mt-4">
+                <h4 className="text-md font-semibold text-gray-700 mb-2">
+                  Create Lead Form
+                </h4>
+                <button
+                  className="text-xs bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+                  onClick={async () => {
+                    if (!selectedPage) return;
+                    setIsLoadingPages(true);
+                    setError(null);
+                    try {
+                      const form = await facebookSDK.createLeadGenForm(
+                        selectedPage.id,
+                        selectedPage.access_token
+                      );
+                      setCreatedFormId(form.id); // ✅ save to state instead
+                      alert(`Lead Form Created: ${form.id}`);
+                    } catch (err: unknown) {
+                      setError(
+                        typeof err === "object" &&
+                          err !== null &&
+                          "message" in err
+                          ? String((err as { message?: unknown }).message)
+                          : "Form creation failed"
+                      );
+                    } finally {
+                      setIsLoadingPages(false);
+                    }
+                  }}
+                >
+                  Create Lead Form
+                </button>
+              </div>
+
               <div className="flex justify-between items-center">
                 <div className="text-sm text-blue-800">
                   <strong>Selected Page:</strong> {selectedPage.name} (ID:{" "}
@@ -272,9 +307,15 @@ export const FacebookLogin: React.FC = () => {
                     setIsLoadingPages(true);
                     setError(null);
                     try {
+                      if (!createdFormId) {
+                        alert("Please create a lead form first.");
+                        return;
+                      }
+
                       const result = await facebookSDK.createAdCampaign(
                         selectedPage.id,
                         selectedPage.access_token,
+                        createdFormId,
                         `Boosted post for ${selectedPage.name}`,
                         "100"
                       );
@@ -293,7 +334,12 @@ export const FacebookLogin: React.FC = () => {
                       setIsLoadingPages(false);
                     }
                   }}
-                  className="text-xs bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                  disabled={!createdFormId}
+                  className={`text-xs px-4 py-2 rounded transition ${
+                    createdFormId
+                      ? "bg-green-600 text-white hover:bg-green-700"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
                 >
                   Create Ad for Selected Page
                 </button>

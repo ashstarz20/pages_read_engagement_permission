@@ -325,21 +325,22 @@ class FacebookSDKService {
   async createAdCampaign(
     pageId: string,
     pageAccessToken: string,
+    formId: string, // 👈 Pass the created or selected Instant Form ID
     adText: string,
     budget: string
   ): Promise<unknown> {
-    const adAccountId = "act_1235074641280538"; // ✅ Replace with your real ad account ID
+    const adAccountId = "act_1235074641280538"; // ✅ Replace with your ad account ID
     const campaignName = `Quick Boost - ${new Date().toISOString()}`;
 
     // 1. Create Campaign
     const campaignRes = await fetch(
-      `https://graph.facebook.com/v19.0/${adAccountId}/campaigns`,
+      `https://graph.facebook.com/v23.0/${adAccountId}/campaigns`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           name: campaignName,
-          objective: "OUTCOME_LEADS", // or POST_ENGAGEMENT / REACH etc.
+          objective: "OUTCOME_LEADS",
           status: "PAUSED",
           special_ad_categories: JSON.stringify([]),
           access_token: pageAccessToken,
@@ -350,7 +351,6 @@ class FacebookSDKService {
     const campaign = await campaignRes.json();
     if (campaign.error)
       throw new Error(`Campaign Error: ${campaign.error.message}`);
-
     const campaignId = campaign.id;
 
     // 2. Create Ad Set
@@ -362,34 +362,35 @@ class FacebookSDKService {
         body: new URLSearchParams({
           name: `Ad Set – ${campaignName}`,
           campaign_id: campaignId,
-          lifetime_budget: (parseFloat(budget) * 100).toString(),
-          bid_strategy: "LOWEST_COST_WITHOUT_CAP", // 👈 auto-bidding
+          lifetime_budget: (parseFloat(budget) * 100).toString(), // INR -> cents
+          bid_strategy: "LOWEST_COST_WITHOUT_CAP",
           billing_event: "IMPRESSIONS",
           optimization_goal: "LEAD_GENERATION",
-          promoted_object: JSON.stringify({ page_id: pageId }),
+          promoted_object: JSON.stringify({
+            page_id: pageId,
+            custom_event_type: "LEAD",
+            leadgen_form_id: formId,
+          }),
           targeting: JSON.stringify({
             facebook_positions: ["feed"],
             geo_locations: { countries: ["IN"] },
             publisher_platforms: ["facebook", "audience_network"],
           }),
           start_time: new Date(Date.now() + 60_000).toISOString(),
-          end_time: new Date(Date.now() + 86_400_000).toISOString(),
+          end_time: new Date(Date.now() + 86_400_000).toISOString(), // 24h
           status: "PAUSED",
           access_token: pageAccessToken,
         }),
       }
     );
 
-    console.log(await adSetRes.json());
-
     const adSet = await adSetRes.json();
     if (adSet.error) throw new Error(`Ad Set Error: ${adSet.error.message}`);
-
     const adSetId = adSet.id;
 
-    // 3. Create Ad Creative
+    // 3. Create Ad Creative (Instant Form)
     const creativeRes = await fetch(
-      `https://graph.facebook.com/v19.0/${adAccountId}/adcreatives`,
+      `https://graph.facebook.com/v23.0/${adAccountId}/adcreatives`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -397,10 +398,7 @@ class FacebookSDKService {
           name: `Creative - ${campaignName}`,
           object_story_spec: JSON.stringify({
             page_id: pageId,
-            link_data: {
-              message: adText,
-              link: "https://facebook.com", // 👈 Optional link
-            },
+            lead_gen_form_id: formId, // 👈 THIS IS REQUIRED
           }),
           access_token: pageAccessToken,
         }),
@@ -410,12 +408,11 @@ class FacebookSDKService {
     const creative = await creativeRes.json();
     if (creative.error)
       throw new Error(`Creative Error: ${creative.error.message}`);
-
     const creativeId = creative.id;
 
     // 4. Create the Ad
     const adRes = await fetch(
-      `https://graph.facebook.com/v19.0/${adAccountId}/ads`,
+      `https://graph.facebook.com/v23.0/${adAccountId}/ads`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -438,6 +435,43 @@ class FacebookSDKService {
       creativeId,
       adId: ad.id,
     };
+  }
+
+  // Create Instant Forms
+  async createLeadGenForm(
+    pageId: string,
+    accessToken: string
+  ): Promise<{ id: string }> {
+    const formName = `Lead Form – ${new Date().toISOString()}`;
+
+    const response = await fetch(
+      `https://graph.facebook.com/v23.0/${pageId}/leadgen_forms`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          name: formName,
+          locale: "en_US",
+          follow_up_action_url: "https://your-landing-page.com/thank-you",
+          questions: JSON.stringify([
+            { type: "FULL_NAME" },
+            { type: "EMAIL" },
+            { type: "PHONE" },
+          ]),
+          privacy_policy: JSON.stringify({
+            url: "https://your-website.com/privacy",
+            link_text: "Privacy Policy",
+          }),
+          access_token: accessToken,
+        }),
+      }
+    );
+
+    const json = await response.json();
+    if (json.error)
+      throw new Error(`Form Creation Error: ${json.error.message}`);
+
+    return json; // { id: ... }
   }
 
   async logout(): Promise<void> {
