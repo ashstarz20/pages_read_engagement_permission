@@ -355,26 +355,31 @@ class FacebookSDKService {
 
     // 2. Create Ad Set
     const adSetRes = await fetch(
-      `https://graph.facebook.com/v19.0/${adAccountId}/adsets`,
+      `https://graph.facebook.com/v23.0/${adAccountId}/adsets`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           name: `Ad Set – ${campaignName}`,
           campaign_id: campaignId,
-          lifetime_budget: (parseFloat(budget) * 100).toString(), // INR → cents
+          lifetime_budget: (parseFloat(budget) * 100).toString(),
+          bid_strategy: "LOWEST_COST_WITHOUT_CAP", // 👈 auto-bidding
           billing_event: "IMPRESSIONS",
           optimization_goal: "LEAD_GENERATION",
           promoted_object: JSON.stringify({ page_id: pageId }),
-          targeting: JSON.stringify({ geo_locations: { countries: ["IN"] } }),
+          targeting: JSON.stringify({
+            facebook_positions: ["feed"],
+            geo_locations: { countries: ["IN"] },
+            publisher_platforms: ["facebook", "audience_network"],
+          }),
           start_time: new Date(Date.now() + 60_000).toISOString(),
           end_time: new Date(Date.now() + 86_400_000).toISOString(),
           status: "PAUSED",
-          execution_options: JSON.stringify(["validate_only"]),
           access_token: pageAccessToken,
         }),
       }
     );
+
     console.log(await adSetRes.json());
 
     const adSet = await adSetRes.json();
