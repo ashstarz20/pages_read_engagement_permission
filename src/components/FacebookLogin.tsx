@@ -1,10 +1,22 @@
-// src/components/FacebookLogin.tsx
-
 import React from "react";
 import { AlertCircle } from "lucide-react";
 import { facebookSDK } from "../services/facebookSDK";
-import type { FacebookPage, FacebookUser } from "../types/facebook";
-import { CreateAdWithLocation } from "../services/CreateAdWithLocation";
+import { FacebookPage, FacebookUser } from "../types/facebook";
+
+// interface FacebookGraphPage {
+//   id: string;
+//   name: string;
+//   category: string;
+//   followers_count?: number;
+//   fan_count?: number;
+//   access_token: string;
+// }
+
+// interface PictureResponse {
+//   data?: {
+//     url?: string;
+//   };
+// }
 
 export const FacebookLogin: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -12,117 +24,125 @@ export const FacebookLogin: React.FC = () => {
 
   const [accessToken, setAccessToken] = React.useState<string | null>(null);
   const [user, setUser] = React.useState<FacebookUser | null>(null);
-
   const [pages, setPages] = React.useState<FacebookPage[]>([]);
   const [pagesLoaded, setPagesLoaded] = React.useState(false);
   const [isLoadingPages, setIsLoadingPages] = React.useState(false);
-
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
+  // Define possible app states
+  // type AppState = "login" | "createAd";
 
+  // const [currentState, setCurrentState] = React.useState<AppState>("login");
   const [selectedPage, setSelectedPage] = React.useState<FacebookPage | null>(
     null
   );
 
-  // Restore session on mount
+  // // Navigate to ad creation
+  // const handleCreateAd = () => {
+  //   setCurrentState("createAd");
+  // };
+
   React.useEffect(() => {
     const restoreSession = async () => {
       try {
-        const status = await facebookSDK.getLoginStatus();
-        if (status.status === "connected" && status.authResponse) {
-          const { accessToken: token, userID } = status.authResponse;
+        const loginStatus = await facebookSDK.getLoginStatus();
+
+        if (loginStatus.status === "connected" && loginStatus.authResponse) {
+          const { accessToken, userID } = loginStatus.authResponse;
+
           window.FB.api(
             "/me",
             { fields: "name,email" },
-            (resp: { error?: any; name?: string; email?: string }) => {
-              if (!resp || resp.error) return;
-              const fbUser: FacebookUser = {
+            (userResponse: any) => {
+              if (!userResponse || userResponse.error) return;
+
+              const user: FacebookUser = {
                 id: userID,
-                name: resp.name ?? "",
-                email: resp.email ?? "",
+                name: userResponse.name,
+                email: userResponse.email || "",
               };
-              setUser(fbUser);
-              setAccessToken(token);
-              localStorage.setItem("fb_user", JSON.stringify(fbUser));
-              localStorage.setItem("fb_token", token);
+
+              setAccessToken(accessToken);
+              setUser(user);
+
+              // Optional: persist
+              localStorage.setItem("fb_user", JSON.stringify(user));
+              localStorage.setItem("fb_token", accessToken);
             }
           );
         }
-      } catch (e) {
-        console.error("Failed to restore Facebook session:", e);
+      } catch (err) {
+        console.error("Failed to restore Facebook session:", err);
       }
     };
+
     restoreSession();
   }, []);
 
-  // Login handler
   const handleLogin = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const { user: fbUser, accessToken: token } = await facebookSDK.login();
-      setUser(fbUser);
-      setAccessToken(token);
-      localStorage.setItem("fb_user", JSON.stringify(fbUser));
-      localStorage.setItem("fb_token", token);
-      setPages([]);
-      setPagesLoaded(false);
-    } catch (e) {
-      console.error("Facebook login error:", e);
-      setError(e instanceof Error ? e.message : "Login failed");
+      const { user, accessToken } = await facebookSDK.login();
+      setUser(user);
+      setAccessToken(accessToken);
+      localStorage.setItem("fb_user", JSON.stringify(user));
+      localStorage.setItem("fb_token", accessToken);
+      setPages([]); // Clear old pages
+      setPagesLoaded(false); // Mark pages not loaded yet
+    } catch (error) {
+      console.error("Facebook login error:", error);
+      setError(error instanceof Error ? error.message : "Login failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load pages handler
   const handleLoadPages = async () => {
     if (!accessToken) return;
     setIsLoadingPages(true);
     setError(null);
+
     try {
-      const resp = await facebookSDK.getUserPages(accessToken);
-      setPages(resp.data ?? []);
+      const response = await facebookSDK.getUserPages(accessToken);
+      setPages(response.data || []);
       setPagesLoaded(true);
-      setCurrentPage(1);
-    } catch (e) {
-      console.error("Error loading pages:", e);
+    } catch (error) {
+      console.error("Error loading pages:", error);
       setError(
-        `Failed to load pages – ${e instanceof Error ? e.message : "Unknown"}`
+        `Failed to load pages - ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     } finally {
       setIsLoadingPages(false);
     }
   };
 
-  // Logout handler
   const handleLogout = async () => {
     await facebookSDK.logout();
-    setUser(null);
     setAccessToken(null);
-    setPages([]);
-    setPagesLoaded(false);
+    setUser(null);
     localStorage.removeItem("fb_user");
     localStorage.removeItem("fb_token");
+    setPages([]);
+    setPagesLoaded(false);
   };
 
-  // Delete session handler
   const handleDelete = () => {
-    setUser(null);
     setAccessToken(null);
-    setPages([]);
-    setPagesLoaded(false);
+    setUser(null);
     localStorage.removeItem("fb_user");
     localStorage.removeItem("fb_token");
+    setPages([]);
+    setPagesLoaded(false);
   };
 
-  // Render
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-5xl mx-auto bg-white shadow rounded-xl border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Facebook Login</h2>
 
-        {/* Login Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -147,7 +167,7 @@ export const FacebookLogin: React.FC = () => {
                   <span>Connecting...</span>
                 </div>
               ) : (
-                "Login With Facebook"
+                <span>Login With Facebook</span>
               )}
             </button>
           </div>
@@ -160,141 +180,257 @@ export const FacebookLogin: React.FC = () => {
           </div>
         </div>
 
-        {/* Error Display */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
             <div className="flex items-start space-x-2">
               <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-red-800">
-                <strong>Error:</strong> {error}
+                <strong>Login Error:</strong> {error}
               </div>
             </div>
           </div>
         )}
 
-        {/* If a page is selected, show the CreateAdWithLocation flow */}
-        {selectedPage ? (
-          <CreateAdWithLocation page={selectedPage} />
-        ) : (
-          // Otherwise, show the pages table
-          <div className="mt-10">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Facebook Pages
-            </h3>
-
-            <div className="flex flex-wrap gap-2 mb-4">
-              {user && (
-                <>
-                  <button
-                    onClick={handleLoadPages}
-                    disabled={isLoadingPages}
-                    className="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition"
-                  >
-                    {isLoadingPages ? "Loading Pages…" : "Load Pages"}
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="text-xs px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition"
-                  >
-                    Logout
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
-                  >
-                    Delete Session
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full table-auto text-sm border border-gray-200">
-                <thead className="bg-gray-100">
+        <div className="mt-10">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Facebook Accounts
+          </h3>
+          <div className="overflow-x-auto mb-6">
+            <table className="w-full table-auto text-sm border border-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 border">Facebook_id</th>
+                  <th className="px-4 py-2 border">app_id</th>
+                  <th className="px-4 py-2 border">Name</th>
+                  <th className="px-4 py-2 border">access_token</th>
+                  <th className="px-4 py-2 border">updated_at</th>
+                  <th className="px-4 py-2 border">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {user && accessToken ? (
                   <tr>
-                    <th className="px-4 py-2 border">Page ID</th>
-                    <th className="px-4 py-2 border">Page Name</th>
-                    <th className="px-4 py-2 border">Action</th>
+                    <td className="px-4 py-2 border">{user.id}</td>
+                    <td className="px-4 py-2 border">2446058352452818</td>
+                    <td className="px-4 py-2 border">{user.name}</td>
+                    <td className="px-4 py-2 border">
+                      <input
+                        type="text"
+                        readOnly
+                        value={accessToken}
+                        className="w-full bg-gray-100 text-xs px-2 py-1 border rounded cursor-pointer select-all"
+                        onClick={(e) => (e.target as HTMLInputElement).select()}
+                      />
+                    </td>
+
+                    <td className="px-4 py-2 border">
+                      {new Date().toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={handleLoadPages}
+                          className="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition"
+                        >
+                          Load Pages
+                        </button>
+                        <button
+                          onClick={handleLogout}
+                          className="text-xs px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition"
+                        >
+                          Logout
+                        </button>
+                        <button
+                          onClick={handleDelete}
+                          className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {!pagesLoaded ? (
-                    <tr>
-                      <td
-                        colSpan={3}
-                        className="text-center text-gray-400 py-4"
-                      >
-                        {user
-                          ? "Click “Load Pages” to view your pages"
-                          : "Log in first"}
-                      </td>
-                    </tr>
-                  ) : pages.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={3}
-                        className="text-center text-gray-400 py-4"
-                      >
-                        No pages available
-                      </td>
-                    </tr>
-                  ) : (
-                    pages
-                      .slice(
-                        (currentPage - 1) * pageSize,
-                        currentPage * pageSize
-                      )
-                      .map((page) => (
-                        <tr key={page.id}>
-                          <td className="px-4 py-2 border">{page.id}</td>
-                          <td className="px-4 py-2 border">{page.name}</td>
-                          <td className="px-4 py-2 border">
-                            <button
-                              onClick={() => setSelectedPage(page)}
-                              className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 transition"
-                            >
-                              Select
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                  )}
-                </tbody>
-              </table>
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center text-gray-400 py-4">
+                      Not logged in
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {selectedPage && (
+            <div className="mb-6 p-4 border border-blue-200 bg-blue-50 rounded-xl">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-blue-800">
+                  <strong>Selected Page:</strong> {selectedPage.name} (ID:{" "}
+                  {selectedPage.id})
+                </div>
+                <button
+                  onClick={async () => {
+                    setIsLoadingPages(true);
+                    setError(null);
+                    try {
+                      const result = await facebookSDK.createAdCampaign(
+                        selectedPage.id,
+                        selectedPage.access_token,
+                        `Boosted post for ${selectedPage.name}`,
+                        "100"
+                      );
+                      alert(
+                        `Ad Campaign Created: ${(result as { id: string }).id}`
+                      );
+                    } catch (err: unknown) {
+                      setError(
+                        typeof err === "object" &&
+                          err !== null &&
+                          "message" in err
+                          ? String((err as { message?: unknown }).message)
+                          : "Ad creation failed"
+                      );
+                    } finally {
+                      setIsLoadingPages(false);
+                    }
+                  }}
+                  className="text-xs bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                >
+                  Create Ad for Selected Page
+                </button>
+              </div>
+            </div>
+          )}
+
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Facebook Pages
+          </h3>
+          <div className="overflow-x-auto">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-600">
+                Showing{" "}
+                {Math.min((currentPage - 1) * pageSize + 1, pages.length)}–
+                {Math.min(currentPage * pageSize, pages.length)} of{" "}
+                {pages.length} pages
+              </div>
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-600">Rows per page:</label>
+                <select
+                  className="border rounded px-2 py-1 text-sm"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1); // reset to first page when pageSize changes
+                  }}
+                >
+                  {[10, 20, 30, 40, 50].map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {/* Pagination Controls */}
-            {pagesLoaded && pages.length > pageSize && (
-              <div className="flex items-center justify-between mt-3 text-sm text-gray-600">
-                <div>
-                  Page {currentPage} of {Math.ceil(pages.length / pageSize)}
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 border rounded disabled:opacity-50"
-                  >
-                    ⬅ Back
-                  </button>
-                  <button
-                    onClick={() =>
-                      setCurrentPage((p) =>
-                        Math.min(p + 1, Math.ceil(pages.length / pageSize))
-                      )
-                    }
-                    disabled={
-                      currentPage === Math.ceil(pages.length / pageSize)
-                    }
-                    className="px-3 py-1 border rounded disabled:opacity-50"
-                  >
-                    Next ➡
-                  </button>
-                </div>
+            <table className="w-full table-auto text-sm border border-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 border">Facebook_id</th>
+                  <th className="px-4 py-2 border">page_id</th>
+                  <th className="px-4 py-2 border">Page_name</th>
+                  <th className="px-4 py-2 border">Page_access_token</th>
+                  <th className="px-4 py-2 border">Page_category_list</th>
+                  <th className="px-4 py-2 border">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoadingPages ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-gray-500">
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Loading pages...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : pagesLoaded && pages.length > 0 ? (
+                  pages
+                    .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                    .map((page) => (
+                      <tr key={page.id}>
+                        <td className="px-4 py-2 border">{user?.id || "--"}</td>
+                        <td className="px-4 py-2 border">{page.id}</td>
+                        <td className="px-4 py-2 border">{page.name}</td>
+                        <td className="px-4 py-2 border">
+                          <input
+                            type="text"
+                            readOnly
+                            value={page.access_token}
+                            className="w-full bg-gray-100 text-xs px-2 py-1 border rounded cursor-pointer select-all"
+                            onClick={(e) =>
+                              (e.target as HTMLInputElement).select()
+                            }
+                          />
+                        </td>
+
+                        <td className="px-4 py-2 border">{page.category}</td>
+                        <td className="px-4 py-2 border">
+                          <button
+                            onClick={() => setSelectedPage(page)}
+                            className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 transition"
+                          >
+                            Select
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center text-gray-400 py-4">
+                      {pagesLoaded
+                        ? "No pages available"
+                        : "Click 'Load Pages' to view"}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            <div className="flex items-center justify-between mt-3 text-sm text-gray-600">
+              <div>
+                Page {currentPage} of {Math.ceil(pages.length / pageSize)}
               </div>
-            )}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  ⬅ Back
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      Math.min(prev + 1, Math.ceil(pages.length / pageSize))
+                    )
+                  }
+                  disabled={currentPage >= Math.ceil(pages.length / pageSize)}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Next ➡
+                </button>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
+
+        <div className="mt-8 text-xs text-gray-500 text-center">
+          By continuing, you agree to our Privacy Policy and Data Deletion
+          procedures.
+          <br />
+          This demo requires a valid Facebook App ID in environment variables.
+        </div>
       </div>
     </div>
   );
