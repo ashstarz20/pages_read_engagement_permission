@@ -360,19 +360,15 @@ class FacebookSDKService {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          name: `Ad Set - ${campaignName}`,
+          name: `Ad Set – ${campaignName}`,
           campaign_id: campaignId,
-          daily_budget: (parseFloat(budget) * 100).toString(), // INR -> cents
+          lifetime_budget: (parseFloat(budget) * 100).toString(), // INR → cents
           billing_event: "IMPRESSIONS",
           optimization_goal: "LEAD_GENERATION",
           promoted_object: JSON.stringify({ page_id: pageId }),
-          targeting: JSON.stringify({
-            geo_locations: {
-              countries: ["IN"],
-            },
-          }),
-          start_time: new Date(Date.now() + 60000).toISOString(), // start in 1 min
-          end_time: new Date(Date.now() + 86400000).toISOString(), // end in 1 day
+          targeting: JSON.stringify({ geo_locations: { countries: ["IN"] } }),
+          start_time: new Date(Date.now() + 60_000).toISOString(),
+          end_time: new Date(Date.now() + 86_400_000).toISOString(),
           status: "PAUSED",
           access_token: pageAccessToken,
         }),
