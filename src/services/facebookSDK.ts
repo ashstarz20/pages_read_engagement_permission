@@ -368,8 +368,6 @@ class FacebookSDKService {
           optimization_goal: "LEAD_GENERATION",
           promoted_object: JSON.stringify({
             page_id: pageId,
-            custom_event_type: "LEAD",
-            leadgen_form_id: formId,
           }),
           targeting: JSON.stringify({
             facebook_positions: ["feed"],
