@@ -370,6 +370,7 @@ class FacebookSDKService {
           start_time: new Date(Date.now() + 60_000).toISOString(),
           end_time: new Date(Date.now() + 86_400_000).toISOString(),
           status: "PAUSED",
+          execution_options: JSON.stringify(["validate_only"]),
           access_token: pageAccessToken,
         }),
       }
