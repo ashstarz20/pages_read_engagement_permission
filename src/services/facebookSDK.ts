@@ -375,6 +375,7 @@ class FacebookSDKService {
         }),
       }
     );
+    console.log(await adSetRes.json());
 
     const adSet = await adSetRes.json();
     if (adSet.error) throw new Error(`Ad Set Error: ${adSet.error.message}`);
