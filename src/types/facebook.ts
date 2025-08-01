@@ -9,6 +9,13 @@ export interface FacebookPage {
   access_token: string;
 }
 
+export interface CreateAdResult {
+  campaignId: string;
+  adSetId: string;
+  creativeId: string;
+  adId: string;
+}
+
 // src/types/facebook.ts
 export interface PagePost {
   id: string;

@@ -326,7 +326,8 @@ class FacebookSDKService {
     pageId: string,
     pageAccessToken: string,
     adText: string,
-    budget: string
+    budget: string,
+    targeting: any
   ): Promise<unknown> {
     const adAccountId = "act_1416855836008525"; // ✅ Replace with your real ad account ID
     const campaignName = `Quick Boost - ${new Date().toISOString()}`;
@@ -364,14 +365,12 @@ class FacebookSDKService {
           campaign_id: campaignId,
           daily_budget: (parseFloat(budget) * 100).toString(), // INR -> cents
           billing_event: "IMPRESSIONS",
-          optimization_goal: "REACH",
-          targeting: JSON.stringify({
-            geo_locations: {
-              countries: ["IN"],
-            },
-          }),
+          optimization_goal: "LEAD_GENERATION",
+          promoted_object: JSON.stringify({ page_id: pageId }),
+          targeting: JSON.stringify(targeting),
           start_time: new Date(Date.now() + 60000).toISOString(), // start in 1 min
-          end_time: new Date(Date.now() + 86400000).toISOString(), // end in 1 day
+          end_time: new Date(Date.now() + 86400000).toISOString(), // end
+          //  in 1 day
           status: "PAUSED",
           access_token: pageAccessToken,
         }),
