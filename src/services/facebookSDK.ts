@@ -328,7 +328,7 @@ class FacebookSDKService {
     adText: string,
     budget: string
   ): Promise<unknown> {
-    const adAccountId = "act_1416855836008525"; // ✅ Replace with your real ad account ID
+    const adAccountId = "act_1235074641280538"; // ✅ Replace with your real ad account ID
     const campaignName = `Quick Boost - ${new Date().toISOString()}`;
 
     // 1. Create Campaign
